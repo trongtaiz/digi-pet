@@ -1,0 +1,860 @@
+<title>digi-pet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+  /* Layout: one reading column; the hero is the live device (a terminal with the pet in its band) beside the controls that drive it. */
+  :root {
+    --bg: #eef0e8;          /* the page: pale LCD paper */
+    --surface: #f8f9f4;
+    --ink: #1d2418;         /* LCD ink */
+    --muted: #5b6455;
+    --line: #cbd1c1;
+    --accent: #2c5d8a;      /* the device shell's blue */
+    --lcd: #dfe6cf;
+    --lcd-night: #2b3027;
+    --term: #1c1c1f;
+    --term-ink: #e6e6e6;
+    --term-dim: #8a8a8a;
+    --full: #3f9a58;
+    --peckish: #b8860b;
+    --hungry: #d9661f;
+    --starving: #d23b32;
+    --cold: #7d8579;
+    --display: "Silkscreen", "Courier New", monospace;
+    --body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161915; --surface: #1e231b; --ink: #dfe6cf; --muted: #9aa48e; --line: #343b2f;
+      --accent: #8fb9df; --full: #6cc483; --peckish: #e0b648; --hungry: #f08a4b; --starving: #ff6a5f;
+      --cold: #8f998a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161915; --surface: #1e231b; --ink: #dfe6cf; --muted: #9aa48e; --line: #343b2f;
+    --accent: #8fb9df; --full: #6cc483; --peckish: #e0b648; --hungry: #f08a4b; --starving: #ff6a5f;
+    --cold: #8f998a; color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--ink); font: 17px/1.6 var(--body); }
+  .page { overflow-x: clip; max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 72px; }
+  h1, h2 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+  h1 { font-size: clamp(2.6rem, 7vw, 4.2rem); line-height: 1; }
+  h2 { font-size: 1.6rem; line-height: 1.15; }
+  h3 { font-size: 1.05rem; margin: 0; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  code, kbd { font-family: var(--mono); font-size: 0.86em; }
+  section { display: grid; gap: 20px; min-width: 0; }
+  .lede { font-size: 1.2rem; color: var(--muted); }
+  .muted { color: var(--muted); }
+
+  /* status chips: what exists today vs what is designed */
+  .chip { display: inline-block; font: 700 0.72rem/1 var(--body); padding: 5px 8px 4px; border-radius: 3px; vertical-align: 3px; margin-left: 8px; letter-spacing: 0.02em; }
+  .chip.built { background: color-mix(in srgb, var(--full) 18%, transparent); color: var(--full); }
+
+  /* ---- hero ---- */
+  .hero { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
+  .hero-copy { display: grid; gap: 18px; padding-top: 12px; }
+  .hero-copy p { font-size: 1.15rem; }
+  @media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+
+  .device { display: grid; gap: 14px; min-width: 0; }
+  .term { background: var(--term); color: var(--term-ink); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px #2c2c31, 0 18px 40px -24px rgba(0, 0, 0, 0.55); font: 13px/1.5 var(--mono); position: relative; }
+  .term-bar { height: 30px; background: #26262a; display: flex; align-items: center; gap: 7px; padding: 0 12px; color: #9a9a9e; font: 12px var(--body); }
+  .term-bar i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .term-bar span { margin-left: 8px; }
+  .term-body { padding: 14px 16px; display: grid; gap: 10px; min-height: 300px; align-content: end; }
+  .t-dim { color: var(--term-dim); }
+  .band { display: flex; justify-content: flex-end; align-items: center; gap: 14px; min-height: 120px; }
+  .band-text { text-align: right; display: grid; gap: 6px; min-width: 0; }
+  .band-name b { color: #fff; }
+  .band-say { min-height: 1.5em; }
+  .lcd-wrap { flex: none; padding: 5px; border-radius: 4px; border: 1px solid transparent; }
+  .lcd-wrap.loud { border-color: currentColor; }
+  canvas.lcd { display: block; width: 192px; max-width: 42vw; height: auto; image-rendering: pixelated; }
+  .prompt { border: 1px solid #4a4a50; border-radius: 6px; padding: 3px 10px; }
+  .statusline { color: #ff8f40; min-height: 1.5em; }
+  .toast { background: #2c2c31; border: 1px solid #44444b; border-radius: 6px; padding: 6px 10px; color: #e6e6e6; font-size: 12px; }
+
+  .notif { position: absolute; top: 40px; left: 12px; width: min(300px, calc(100% - 24px)); background: rgba(246, 246, 248, 0.96); color: #1d1d1f; border-radius: 12px; padding: 10px 12px; font: 12.5px/1.35 -apple-system, var(--body); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); display: grid; gap: 2px; }
+  .notif small { color: #6e6e73; font-size: 11px; }
+
+  .controls { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; }
+  .clock-row { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }
+  .clock { font: 700 1.5rem var(--mono); font-variant-numeric: tabular-nums; }
+  .state-name { font-weight: 700; }
+  .track-wrap { display: grid; gap: 6px; }
+  .track { position: relative; height: 12px; border-radius: 6px; overflow: hidden; display: flex; }
+  .track span { display: block; height: 100%; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .ticks { position: relative; height: 1.3em; font: 12px var(--mono); color: var(--muted); }
+  .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .ticks span:first-child { transform: none; }
+  .ticks span:last-child { transform: translateX(-100%); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .row > label:first-child { color: var(--muted); font-size: 0.9rem; min-width: 7.5em; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; color: var(--ink); font: 0.88rem var(--body); padding: 6px 10px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .btn { border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font: 700 0.92rem var(--body); padding: 8px 14px; border-radius: 7px; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .log { font-size: 0.92rem; color: var(--muted); min-height: 1.6em; }
+  .log b { color: var(--ink); }
+
+  /* ---- explainers ---- */
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+  .two > * { min-width: 0; }
+  .note { border-left: 3px solid var(--line); padding-left: 14px; }
+
+  .scale { display: grid; gap: 8px; }
+  .scale-bar { display: grid; grid-template-columns: 30fr 15fr 10fr 5fr; height: 44px; border-radius: 6px; overflow: hidden; }
+  .scale-bar div { display: flex; align-items: center; padding: 0 10px; font-weight: 700; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; }
+  .scale-cap { display: grid; grid-template-columns: 30fr 15fr 10fr 5fr; font-size: 0.85rem; color: var(--muted); }
+  .scale-cap div { padding-right: 8px; min-width: 0; }
+
+  .day { display: grid; gap: 6px; }
+  .day-bar { position: relative; height: 40px; border-radius: 6px; background: color-mix(in srgb, var(--full) 22%, var(--surface)); overflow: hidden; border: 1px solid var(--line); }
+  .day-bar .rest { position: absolute; top: 0; bottom: 0; background: var(--lcd-night); color: #c9d2bb; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; white-space: nowrap; overflow: hidden; }
+  .day-bar .daystart { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--accent); }
+  .day-ticks { position: relative; height: 1.4em; font: 12px var(--mono); color: var(--muted); }
+  .day-ticks span { position: absolute; transform: translateX(-50%); }
+
+  .cases { display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .case { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .case strong { display: block; }
+  .verdict { font-weight: 700; }
+  .verdict.yes { color: var(--starving); }
+  .verdict.no { color: var(--full); }
+
+  .bands { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .bands figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+  .bands figcaption { font-size: 0.92rem; color: var(--muted); }
+  .mini { background: var(--term); color: var(--term-ink); border-radius: 8px; padding: 10px 12px; font: 12px/1.45 var(--mono); display: flex; justify-content: flex-end; align-items: center; gap: 10px; min-height: 96px; overflow: hidden; }
+  .mini canvas { width: 128px; image-rendering: pixelated; flex: none; }
+  .mini .band-text { font-size: 11.5px; }
+  .mini.one { min-height: 0; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.85rem; color: var(--muted); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  td code { white-space: nowrap; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---- one turn ---- */
+  .flow-wrap { display: grid; gap: 4px; overflow-x: auto; padding-bottom: 28px; }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .step { font: 0.82rem var(--mono); padding: 5px 9px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); white-space: nowrap; }
+  .step.you { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .step.meal { border-color: var(--full); color: var(--full); }
+  .arrow { color: var(--muted); }
+  .flow-span { border: 2px solid var(--accent); border-top: 0; height: 10px; border-radius: 0 0 6px 6px; position: relative; margin-top: 4px; }
+  .flow-span span { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font: 700 0.85rem var(--body); color: var(--accent); white-space: nowrap; }
+
+  /* ---- battle lab ---- */
+  .lab { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 760px) { .lab { grid-template-columns: minmax(0, 1fr); } }
+  .lab-field { background: var(--term); color: var(--term-ink); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; font: 12.5px/1.45 var(--mono); }
+  .lab-top { display: flex; justify-content: space-between; gap: 10px; min-height: 1.45em; }
+  .lab-red { color: #ff5f57; font-weight: 700; }
+  #labCanvas { width: 100%; height: auto; image-rendering: pixelated; display: block; }
+  .lab-log { color: var(--term-dim); min-height: 2.9em; }
+  .lab-controls { display: grid; gap: 10px; }
+  .lab-controls .row > label:first-child { min-width: 5.5em; }
+  .lab-tally { display: flex; flex-wrap: wrap; gap: 18px; font-size: 0.95rem; color: var(--muted); }
+  .lab-tally b { color: var(--ink); }
+  .verdict.neutral { color: var(--muted); }
+
+  footer { color: var(--muted); font-size: 0.9rem; display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 20px; }
+
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="page">
+
+  <!-- ===== hero: the pet, live ===== -->
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>digi-pet</h1>
+      <p>A virtual pet that lives above your Claude Code prompt. It eats your prompt cache: let the cache go cold and it gets hungry, yells, and eventually gets sick.</p>
+      <p class="muted">Drag the slider to move time since your last prompt, or press Play. Then send it a prompt and watch it eat. Everything here follows the plugin's own rules.</p>
+      <p class="muted" style="font-size:0.95rem">In the real plugin the pet is a Digital Monster Color Digimon. It hatches from a random egg, one of the five device versions, and grows from how you work: turns, tests, commits and care. This page uses an original stand-in sprite so it can be shared.</p>
+    </div>
+
+    <div class="device">
+      <div class="term" aria-label="Claude Code terminal with the pet in the band above the prompt">
+        <div class="term-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>claude · my-app</span></div>
+        <div class="term-body">
+          <div class="t-dim">⏺ Ran the tests: 42 passed.</div>
+          <div class="band" id="band">
+            <div class="band-text">
+              <div class="band-name"><b>Digi</b> <span class="t-dim">· Baby I</span></div>
+              <div class="band-say" id="say"></div>
+              <div id="hungerLine"></div>
+              <div class="t-dim" id="hint" style="font-size:12px"></div>
+            </div>
+            <div class="lcd-wrap" id="lcdWrap"><canvas class="lcd" id="lcd" width="32" height="16" aria-label="the pet's screen"></canvas></div>
+          </div>
+          <div class="prompt">&gt;&nbsp;</div>
+          <div class="statusline" id="statusline"></div>
+          <div class="toast" id="toast" hidden></div>
+        </div>
+        <div class="notif" id="notif" hidden><small>Script Editor · now</small><b id="notifTitle"></b><span id="notifBody"></span></div>
+      </div>
+
+      <div class="controls">
+        <div class="clock-row">
+          <div><span class="muted">Now</span> <span class="clock" id="clock">09:00</span></div>
+          <div><span class="state-name" id="stateName">Full</span> <span class="muted" id="stateDetail"></span></div>
+        </div>
+        <div class="track-wrap">
+          <div class="track" aria-hidden="true">
+            <span style="flex:30;background:var(--full)"></span><span style="flex:15;background:var(--peckish)"></span><span style="flex:10;background:var(--hungry)"></span><span style="flex:5;background:var(--starving)"></span><span style="flex:10;background:var(--cold)"></span>
+          </div>
+          <label for="minutes" class="muted" style="font-size:0.9rem">Minutes since your last prompt: <b id="minLabel" class="num">0</b></label>
+          <input type="range" id="minutes" min="0" max="70" step="1" value="0">
+          <div class="ticks" aria-hidden="true"><span style="left:0">0</span><span style="left:42.86%">30</span><span style="left:64.29%">45</span><span style="left:78.57%">55</span><span style="left:85.71%">60</span><span style="left:100%">70 min</span></div>
+        </div>
+        <div class="row">
+          <button class="btn" id="feed">Send a prompt</button>
+          <button class="btn ghost" id="play" aria-pressed="false">Play</button>
+        </div>
+        <div class="row"><label>Last prompt at</label>
+          <div class="seg" id="lpSeg">
+            <button data-v="540" aria-pressed="true">09:00</button><button data-v="680">11:20</button><button data-v="1030">17:10</button>
+          </div>
+        </div>
+        <div class="row"><label>Claude is</label>
+          <div class="seg" id="actSeg">
+            <button data-v="idle" aria-pressed="true">idle</button><button data-v="think">thinking</button><button data-v="tool">running a tool</button><button data-v="ask">waiting for OK</button>
+          </div>
+        </div>
+        <div class="row"><label>This session</label>
+          <label class="check"><input type="checkbox" id="side"> side work</label>
+          <label class="check"><input type="checkbox" id="brk"> on a break</label>
+          <label class="check"><input type="checkbox" id="sleep"> <code>/digi sleep</code></label>
+        </div>
+        <div class="log" id="log">Care mistakes today: <b>0</b></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== the cache clock ===== -->
+  <section>
+    <h2>It eats your prompt cache <span class="chip built">Built</span></h2>
+    <div class="two">
+      <p>Claude Code keeps your conversation in a prompt cache for an hour after each request. Sending the next prompt inside that hour reads the cache at about a tenth of the normal input price. Missing it means the whole conversation is written to the cache again at about twice the price. On a 150k-token session that is roughly a 20× difference for the same prompt.</p>
+      <p>Every request in the main conversation counts as a meal and resets the clock. The pet gets hungrier as the hour runs out, so you notice before the cache goes cold, while a prompt can still save it.</p>
+    </div>
+    <div class="scale" aria-label="hunger by minutes since the last request">
+      <div class="scale-bar">
+        <div style="background:var(--full)">Full</div><div style="background:var(--peckish)">Peckish</div><div style="background:var(--hungry)">Hungry</div><div style="background:var(--starving)" title="Starving">!</div>
+      </div>
+      <div class="scale-cap">
+        <div>0 to 30 min. Four hearts, the pet idles.</div>
+        <div>30 to 45. A hint in the band.</div>
+        <div>45 to 55. Red screen, toast, macOS notification.</div>
+        <div>55 to 60. Countdown.</div>
+      </div>
+    </div>
+    <p class="muted">At 60 minutes the cache is cold. The pet stops yelling, because there is nothing left to save. The TTL is a setting: set it to 5 if your sessions use the default 5-minute cache.</p>
+  </section>
+
+  <!-- ===== quiet times ===== -->
+  <section>
+    <h2>When it stays quiet <span class="chip built">Built</span></h2>
+    <p>A cache going cold while you are at lunch or done for the day is fine, so the pet does not nag then. During rest hours it naps on a dark screen.</p>
+    <div class="day" aria-label="rest hours across a day">
+      <div class="day-bar">
+        <div class="rest" style="left:0;width:33.33%;justify-content:flex-end;padding-right:10px">until 08:00</div>
+        <div class="rest" style="left:50%;width:8.33%">lunch</div>
+        <div class="rest" style="left:75%;width:25%">from 18:00</div>
+        <div class="daystart" style="left:16.67%" title="the day starts at 04:00"></div>
+      </div>
+      <div class="day-ticks" aria-hidden="true"><span style="left:0;transform:none">00</span><span style="left:16.67%">04 day starts</span><span style="left:33.33%">08</span><span style="left:50%">12</span><span style="left:58.33%">14</span><span style="left:75%">18</span><span style="left:100%;transform:translateX(-100%)">24</span></div>
+    </div>
+    <div class="two">
+      <div class="note"><h3>No pointless alarms</h3><p class="muted">If a rest window starts before the cache would go cold, there are no warnings at all. A prompt at 11:20 makes the cache last until 12:20, inside lunch, so feeding it at 12:05 would only move the expiry deeper into lunch. Try the 11:20 and 17:10 presets above.</p></div>
+      <div class="note"><h3>Ways to turn it off</h3><p class="muted"><code>/digi break 90m</code> or <code>/digi break until 15:30</code> for a meeting. <code>/digi sleep</code> when you are done with a session. <code>/digi side</code> for side work, or list side-work folders in settings. Small sessions under 20k tokens of context never get hungry, since their cache is cheap to rebuild.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== care mistakes ===== -->
+  <section>
+    <h2>Care mistakes <span class="chip built">Built</span></h2>
+    <p>On the original V-Pet, ignoring a hungry pet was a care mistake, and care mistakes decided what it grew into. Here a care mistake is coming back to a cold cache on the same working day, when nothing excused it. The pet looks sick for three turns and the mistake goes on its record. It never dies and never de-evolves.</p>
+    <div class="cases">
+      <div class="case"><div><strong>Last prompt 09:00, back at 10:30, cache had to be rebuilt</strong><span class="muted">Cold mid-morning, nothing excused it.</span></div><div class="verdict yes">One care mistake</div></div>
+      <div class="case"><div><strong>Cold again before lunch, back at 11:40</strong><span class="muted">At most one per session per day.</span></div><div class="verdict no">No mistake</div></div>
+      <div class="case"><div><strong>Last prompt 11:30, back at 14:30</strong><span class="muted">Lunch sits between them.</span></div><div class="verdict no">No mistake</div></div>
+      <div class="case"><div><strong>Last prompt 16:30, back the next morning</strong><span class="muted">A new working day. The day turns over at 04:00, so late nights still count as the evening before.</span></div><div class="verdict no">No mistake</div></div>
+      <div class="case"><div><strong>Back after 61 minutes, but the cache was still there</strong><span class="muted">The plugin checks the request's real cache usage, not just the clock.</span></div><div class="verdict no">No mistake</div></div>
+      <div class="case"><div><strong>A side session, a break, or after <code>/digi sleep</code></strong><span class="muted">You told it you were away.</span></div><div class="verdict no">No mistake</div></div>
+    </div>
+  </section>
+
+  <!-- ===== what it looks like ===== -->
+  <section>
+    <h2>Above your prompt <span class="chip built">Built</span></h2>
+    <p>The pet sits at the right edge of the band above the prompt. It is always there, and it shows what Claude is doing. While Claude works, the rest of the band becomes a battlefield. Small monsters walk in from the left and the pet shoots them down, two lanes at a time while a tool runs. When a test, build or lint run fails, a big red boss takes the field and stays until that check passes again; then it blows up with a WIN! and the win counter goes up. That counter is real: it shows this stage's battles won. When a long prompt leaves the band fewer than eight rows, the pet shrinks to a four-row half-size screen, and to a single line while a slash-command or file picker is open.</p>
+    <div class="bands" id="bands"></div>
+  </section>
+
+  <!-- ===== commands ===== -->
+  <section>
+    <h2>Commands <span class="chip built">Built</span></h2>
+    <div class="table-wrap"><table>
+      <tr><th>Type</th><th>What it does</th></tr>
+      <tr><td><code>/digi</code>, <code>/digi stats</code></td><td>Everything as text: species, stats, this stage's counts, battles, the way to the next stage, hunger and the record.</td></tr>
+      <tr><td><code>/digi pane</code></td><td>The same with pictures: the pet on a large screen, stat bars, and its evolution so far.</td></tr>
+      <tr><td><code>/digi pet</code></td><td>Pats the pet. It smiles for a few seconds, and the first three pats a day raise SYN. A pat does not cure a sick pet.</td></tr>
+      <tr><td><code>/digi log</code></td><td>Every form the pet has taken, with the day it got there.</td></tr>
+      <tr><td><code>/digi jogress</code></td><td>For a Mega with a jogress partner on its chart (BlitzGreymon and CresGarurumon): fuse into Omnimon Alter-S once it has fought enough.</td></tr>
+      <tr><td><code>/digi sleep</code></td><td>Quiet until your next prompt. Use it when you are done with a session.</td></tr>
+      <tr><td><code>/digi break 90m</code>, <code>/digi break until 15:30</code>, <code>/digi break off</code></td><td>A one-off break. Your next prompt ends it early.</td></tr>
+      <tr><td><code>/digi side</code>, <code>/digi side off</code></td><td>Marks this session as side work, where the pet never gets hungry. It is remembered after <code>/clear</code>.</td></tr>
+      <tr><td><code>/digi sim agu hungry</code>, <code>/digi sim off</code></td><td>Shows any Digimon in any state, to preview the art.</td></tr>
+      <tr><td><code>/digi debug ttl 5</code>, <code>/digi debug ttl off</code></td><td>Shortens the cache clock so you can watch the whole hunger cycle in minutes.</td></tr>
+    </table></div>
+  </section>
+
+  <!-- ===== settings + record ===== -->
+  <section>
+    <h2>Settings and record <span class="chip built">Built</span></h2>
+    <div class="two">
+      <div class="table-wrap"><table>
+        <tr><th>Setting in <code>/config</code></th><th>Default</th></tr>
+        <tr><td>Cache TTL</td><td class="num">60 min</td></tr>
+        <tr><td>Rest hours</td><td><code>12:00-14:00,18:00-08:00</code></td></tr>
+        <tr><td>Day starts at</td><td class="num">04:00</td></tr>
+        <tr><td>Side-work folders</td><td>none</td></tr>
+        <tr><td>Smallest cache worth minding</td><td class="num">20,000 tokens</td></tr>
+        <tr><td>macOS notifications</td><td>on</td></tr>
+        <tr><td>Growth pace: fast, normal or slow</td><td>normal</td></tr>
+        <tr><td>Reduced motion</td><td>off</td></tr>
+      </table></div>
+      <div class="table-wrap"><table>
+        <tr><th>Recorded for every session, day by day</th></tr>
+        <tr><td>Turns, turns during rest hours, turns with a tool, quick turns</td></tr>
+        <tr><td>Meals: requests that refreshed the cache, and cache hits and misses after a gap</td></tr>
+        <tr><td>Care mistakes, overfeeds, risky moves</td></tr>
+        <tr><td>Research calls, lines written, checks passed, battles won and lost</td></tr>
+        <tr><td>Commits and pull requests, subagents, prompts and pats</td></tr>
+        <tr><td class="muted">Each session writes only its own record, so sessions running side by side never overwrite each other.</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ===== what a turn is ===== -->
+  <section>
+    <h2>One turn <span class="chip built">Built</span></h2>
+    <p>A turn is one exchange: you send a prompt, Claude works on it, and Claude finishes answering. However long the work runs, it is one turn. Inside it, every request Claude sends to the model is a meal for the hunger clock, so a busy turn can be one turn and twenty meals.</p>
+    <div class="flow-wrap" aria-label="one turn, from your prompt to Claude's answer">
+      <div class="flow">
+        <span class="step you">You: "fix the failing test"</span><span class="arrow">→</span>
+        <span class="step meal">request</span><span class="arrow">→</span>
+        <span class="step tool">Read</span><span class="arrow">→</span>
+        <span class="step meal">request</span><span class="arrow">→</span>
+        <span class="step tool">Edit</span><span class="arrow">→</span>
+        <span class="step meal">request</span><span class="arrow">→</span>
+        <span class="step tool">Bash: npm test</span><span class="arrow">→</span>
+        <span class="step meal">request</span><span class="arrow">→</span>
+        <span class="step you">Claude: "Fixed it."</span>
+      </div>
+      <div class="flow-span"><span>1 turn · 4 meals · 3 tools</span></div>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>What the turn was like</th><th>What it adds</th></tr>
+      <tr><td>Any finished turn in the main conversation</td><td>One turn toward the stage's turn count. Five turns in a day make it an <b>active day</b>.</td></tr>
+      <tr><td>Claude used at least one tool</td><td>One <b>training</b>. Up to 12 a day count; more that day train no further.</td></tr>
+      <tr><td>It used a tool and answered in under a minute</td><td>A <b>quick turn</b>: SPD.</td></tr>
+      <tr><td>It ran during rest hours</td><td>A <b>sleep disturbance</b>.</td></tr>
+      <tr><td>You interrupted it with Esc</td><td>Still a turn, and also a <b>risky move</b>. Battles in it count neither way.</td></tr>
+    </table></div>
+    <p class="muted">A subagent's own turns are not turns of yours, though its tool calls still raise stats. Sending a subagent counts as a summon.</p>
+  </section>
+
+  <!-- ===== battles ===== -->
+  <section>
+    <h2>How a battle happens <span class="chip built">Built</span></h2>
+    <p>A battle starts when a check fails: a test, build, type-check or lint run that Claude makes. The battle is won if the same check passes again before the turn ends, and lost if it is still failing when the turn ends. A check that passes without failing first is no battle, just two DEF points. Try it:</p>
+    <div class="lab">
+      <div class="lab-field">
+        <div class="lab-top"><span id="labRed" class="lab-red"></span><span id="labScore" class="t-dim">WINS 0</span></div>
+        <canvas id="labCanvas" width="64" height="16" aria-label="the battlefield"></canvas>
+        <div class="lab-log" id="labLog" aria-live="polite">A new turn. Nothing is failing.</div>
+      </div>
+      <div class="lab-controls">
+        <div class="row"><label>npm test</label><button class="btn ghost" id="labTestFail">fails</button><button class="btn ghost" id="labTestPass">passes</button></div>
+        <div class="row"><label>tsc</label><button class="btn ghost" id="labTscFail">fails</button><button class="btn ghost" id="labTscPass">passes</button></div>
+        <div class="row"><label>The turn</label><button class="btn" id="labEnd">ends</button><button class="btn ghost" id="labAbort">is interrupted</button></div>
+        <div class="lab-tally"><span>Won <b id="labWon" class="num">0</b></span><span>Lost <b id="labLost" class="num">0</b></span><span>Win ratio <b id="labRatio" class="num">–</b></span></div>
+      </div>
+    </div>
+    <div class="cases">
+      <div class="case"><div><strong>npm test fails, Claude fixes the code, npm test passes</strong><span class="muted">Red, then green again in the same turn.</span></div><div class="verdict no">Won</div></div>
+      <div class="case"><div><strong>npm test fails and the turn ends with it still failing</strong><span class="muted">Even if you fix it in the next turn: each battle ends with its turn.</span></div><div class="verdict yes">Lost</div></div>
+      <div class="case"><div><strong>tsc and npm test both fail, only tsc is fixed</strong><span class="muted">Each check is its own battle.</span></div><div class="verdict neutral">1 won, 1 lost</div></div>
+      <div class="case"><div><strong>npm test fails, then you press Esc</strong><span class="muted">An interrupted turn fought nothing to the end.</span></div><div class="verdict neutral">No battle</div></div>
+      <div class="case"><div><strong>npm test passes on the first run</strong><span class="muted">Nothing to fight. It still counts as a check passed.</span></div><div class="verdict neutral">No battle</div></div>
+    </div>
+    <div class="two">
+      <div class="note"><h3>Which commands are checks</h3><p class="muted"><code>npm</code>, <code>pnpm</code>, <code>yarn</code> or <code>bun</code> with <code>test</code>, <code>build</code>, <code>lint</code>, <code>typecheck</code> or <code>check</code>; <code>jest</code>, <code>vitest</code>, <code>pytest</code>, <code>tsc</code>, <code>eslint</code>, <code>ruff</code>, <code>mypy</code>, <code>go test</code>, <code>cargo test</code>, <code>xcodebuild</code> and a few more. Background runs are skipped, since they return before they finish.</p></div>
+      <div class="note"><h3>How it knows a run failed</h3><p class="muted">From the output, not the exit code. Claude usually pipes test output through <code>tail</code>, which hides the real exit code: 96% of your test runs were piped. So the plugin reads lines like <code>2 failed</code>, <code>FAIL</code>, <code>error TS2322</code> or <code>(3 errors,</code>. ESLint warnings alone are a pass.</p></div>
+    </div>
+    <p>Battles matter from Champion on. To reach Ultimate and then Mega the pet needs <b>15 battles in its stage</b> and an <b>80% win ratio</b>. The battle count starts over at each stage; the win ratio counts every battle ever, as on the device. Between 40% and 79% it gets one chance a day, better the closer it is to 80%.</p>
+  </section>
+
+  <!-- ===== growing up ===== -->
+  <section>
+    <h2>Growing up <span class="chip built">Built</span></h2>
+    <p>The pet follows the real Digital Monster Color chart of its egg's version; the stages below are Ver.1's. What it grows into is decided by what happened during its current stage; on each digivolution those counts start over.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Stage</th><th>Lasts until</th><th>What decides the next form</th></tr>
+      <tr><td>Digitama, Ver.1 to Ver.5 at random</td><td class="num">3 turns</td><td>It hatches into its version's Baby I (Botamon, Punimon, Poyomon, Yuramon or Zurumon), keeping those turns</td></tr>
+      <tr><td>Botamon</td><td class="num">25 turns</td><td>Always Koromon</td></tr>
+      <tr><td>Koromon</td><td class="num">2 active days and 100 turns</td><td>0–3 care mistakes: Agumon. 4 or more: Betamon</td></tr>
+      <tr><td>Rookie</td><td class="num">5 active days</td><td>Care mistakes, training, overfeeds and sleep disturbances pick Greymon, Devimon, Tyrannomon, Meramon, Airdramon, Seadramon, or Numemon when nothing fits</td></tr>
+      <tr><td>Champion</td><td class="num">10 active days and 30 commits or PRs</td><td>15 battles and 80% wins</td></tr>
+      <tr><td>Ultimate</td><td class="num">21 active days, 60 commits or PRs, 10 subagents</td><td>15 battles, 80% wins, at most 1 care mistake: BlitzGreymon, ShinMonzaemon or BanchoMamemon</td></tr>
+      <tr><td>BlitzGreymon</td><td class="num">14 active days</td><td><code>/digi jogress</code> with 15 battles and 80% wins: Omnimon Alter-S</td></tr>
+    </table></div>
+    <div class="table-wrap"><table>
+      <tr><th>On the device</th><th>In Claude Code</th></tr>
+      <tr><td>Care mistakes</td><td>Coming back to a cold cache on a working day</td></tr>
+      <tr><td>Training</td><td>Turns where Claude used a tool, up to 12 a day</td></tr>
+      <tr><td>Overfeeding</td><td>The context filling past 85%; it counts again once it has dropped under 70%</td></tr>
+      <tr><td>Sleep disturbances</td><td>Turns during rest hours</td></tr>
+      <tr><td>Battles and win ratio</td><td>Checks gone red and green again, as above</td></tr>
+      <tr><td>Weight</td><td>The context the pet carries: a gram per 10k tokens, 5g at least</td></tr>
+    </table></div>
+    <div class="two">
+      <div class="note"><h3>Risky moves turn it Virus</h3><p class="muted">A forced push, <code>--no-verify</code>, <code>git reset --hard</code>, an <code>rm -rf</code> outside temp and build folders, or an interrupted turn. Five a day across a stage send a branching pet down its Virus branch: Koromon to Betamon, Agumon to Devimon.</p></div>
+      <div class="note"><h3>Trophies need proof</h3><p class="muted">A commit counts when its output shows <code>[main 1a2b3c4]</code>, a pull request when the output has its link. A commit that found nothing to commit, or a hook that failed, earns nothing.</p></div>
+    </div>
+
+    <h3>Six stats from how you use Claude Code</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Stat</th><th>One point for</th></tr>
+      <tr><td><b>STA</b> stamina</td><td>Every 6 minutes Claude spends on your turns</td></tr>
+      <tr><td><b>INT</b></td><td>Every 4 successful Read, Grep, Glob, web search or fetch calls</td></tr>
+      <tr><td><b>ATK</b></td><td>Every 25 lines written through Edit and Write</td></tr>
+      <tr><td><b>DEF</b></td><td>Half a check run that passed (2 points each)</td></tr>
+      <tr><td><b>SPD</b></td><td>Each request that ran tools side by side, and each quick turn</td></tr>
+      <tr><td><b>SYN</b> bond</td><td>Every 2 prompts, 2 per pat (3 pats a day), and a point for each active day in the week before</td></tr>
+    </table></div>
+    <p class="muted">Past 20 points in a day a stat grows at a quarter of the speed, and tokens or cost never raise one, so the pet never rewards spending more. The stats are a scoreboard: the branch comes from the chart's rules above.</p>
+    <p class="muted">Which parts are the device's and which are ours: the branch rules, the 15 battles and the 80% are the device's. How long each stage lasts, the commit and subagent gates, risky moves turning a branch Virus, the daily chance below 80%, the jogress partner on call, hatching keeping its turns, weight in grams and the SYN bonuses are this plugin's own, and all of them can be tuned.</p>
+  </section>
+
+  <footer>
+    <p>digi-pet is a personal Claude Code plugin built on Claude Code's function-hooks plugin API. The Digimon sprites it uses are Bandai's: idle frames from the Digital Monster Color, and full twelve-pose sheets for 87 of the 90 species from the community Full Color Digimon Dot Sprites pack. They stay on your machine.</p>
+    <p>Source: <code>~/work/personal/digi-pet</code>, read straight from <code>plugin/</code>. Run <code>/reload-plugins</code> after an edit.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ---- the stand-in pet (original art), 16×16 ----
+  const PET = [
+    '................',
+    '..oo........oo..',
+    '.obbo......obbo.',
+    '.obbbo....obbbo.',
+    '..obbboooobbbo..',
+    '.obbbbbbbbbbbbo.',
+    '.obbeebbbbeebbo.',
+    'obbbewbbbbewbbbo',
+    'obbbeebbbbeebbbo',
+    'obccbbboobbbccbo',
+    'obbbbbbbbbbbbbbo',
+    '.obblllllllllbo.',
+    '.obblllllllllbo.',
+    '..obbbbbbbbbbo..',
+    '...obo....obo...',
+    '...ooo....ooo...',
+  ];
+  const PET_COLORS = { o: '#1d2418', b: '#5aa58a', l: '#cfe8c9', e: '#1d2418', w: '#ffffff', c: '#e07a8b' };
+  // The plugin's own icons (hooks/render.ts).
+  const MEAT = ['.mm...', 'mmmm..', 'mmmm..', '.mmb..', '...bb.', '....bb'];
+  const MEAT_BITES = [MEAT, ['......', '..mm..', '.mmm..', '.mmb..', '...bb.', '....bb'], ['......', '......', '......', '...b..', '...bb.', '....bb']];
+  const MEAT_COLORS = { m: '#b5562e', b: '#8c826a' };
+  const BANG = ['b', 'b', 'b', '.', 'b'];
+  const ZZZ = ['zzzz', '..z.', '.z..', 'zzzz'];
+  const SKULL = ['.sss.', 's.s.s', 'sssss', '.s.s.'];
+  const HEART = ['h.h', 'hhh', '.h.'];
+  const SHOT = ['.oo.', 'oooo', '.oo.'];
+  const QUESTION = ['qqq.', '...q', '.qq.', '....', '.q..'];
+  const LCD = '#dfe6cf', NIGHT = '#2b3027';
+
+  const mix = (a, b, f) => {
+    const n = (s, i) => parseInt(s.slice(1 + i * 2, 3 + i * 2), 16);
+    return '#' + [0, 1, 2].map(i => Math.round(n(a, i) + (n(b, i) - n(a, i)) * f).toString(16).padStart(2, '0')).join('');
+  };
+
+  function screen(w) {
+    return { w, h: 16, px: new Array(w * 16).fill(null) };
+  }
+  function plot(s, x, y, c) {
+    x = Math.round(x); y = Math.round(y);
+    if (x >= 0 && x < s.w && y >= 0 && y < s.h) s.px[y * s.w + x] = c;
+  }
+  function art(s, x, y, rows, colors) {
+    rows.forEach((r, j) => [...r].forEach((ch, i) => { const c = colors[ch]; if (c) plot(s, x + i, y + j, c); }));
+  }
+  function pet(s, x, y, o = {}) {
+    PET.forEach((r, j) => {
+      // A bob: the body sinks a pixel, the feet stay put.
+      const dy = o.bob && j < 14 ? 1 : 0;
+      [...r].forEach((ch, i) => {
+        let c = PET_COLORS[ch];
+        if (!c) return;
+        if (o.blink && (ch === 'e' || ch === 'w') && j !== 7) c = PET_COLORS.b;
+        if (o.blink && j === 7 && (ch === 'e' || ch === 'w')) c = PET_COLORS.o;
+        if (o.tint) c = mix(c, o.tint.to, o.tint.f);
+        plot(s, x + (o.flip ? 15 - i : i), y + j + dy, c);
+      });
+    });
+  }
+  function paint(canvas, s, bg) {
+    canvas.width = s.w; canvas.height = s.h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, s.w, s.h);
+    s.px.forEach((c, i) => { if (c) { ctx.fillStyle = c; ctx.fillRect(i % s.w, Math.floor(i / s.w), 1, 1); } });
+  }
+  const walkX = (t, room) => { const p = t % (room * 2); return p < room ? room - p : p - room; };
+  const walkFlip = (t, room) => t % (room * 2) >= room;
+
+  /** The pet's screen for view `v` at frame `t`, after hooks/render.ts lcd(). */
+  function drawLcd(canvas, v, t) {
+    const W = 32, s = screen(W), icon = W - 7, room = W - 16;
+    if (v.mood === 'asleep') {
+      pet(s, 2, 0, { tint: { to: NIGHT, f: 0.6 } });
+      art(s, icon, 1 + (t % 3), ZZZ, { z: '#9aa58c' });
+      return paint(canvas, s, NIGHT);
+    }
+    const key = v.mood !== 'normal' ? v.mood : v.hunger;
+    switch (key) {
+      case 'eating': {
+        pet(s, 2, 0, { bob: t % 2 });
+        const bite = Math.min(t, 3);
+        if (bite < 3) art(s, icon, 8, MEAT_BITES[bite], MEAT_COLORS); else art(s, icon + 1, 2, HEART, { h: '#e0245e' });
+        break;
+      }
+      case 'sick':
+        pet(s, 2 + (t % 2), 0);
+        if (t % 2 === 0) art(s, icon, 1, SKULL, { s: '#6b4f9e' });
+        break;
+      case 'cold':
+        pet(s, 6, 0, { tint: { to: LCD, f: 0.45 } });
+        break;
+      case 'hungry':
+        pet(s, 4 + (t % 2), 0, { bob: t % 2 });
+        if (t % 2 === 0) art(s, icon, 8, MEAT, MEAT_COLORS);
+        break;
+      case 'starving':
+        pet(s, 4 + (t % 2 ? 1 : -1), 0, { bob: t % 2 });
+        art(s, icon, 8, MEAT, MEAT_COLORS);
+        if (t % 2 === 0) art(s, icon + 2, 1, BANG, { b: '#d0021b' });
+        break;
+      default:
+        if (v.act === 'tool') {
+          pet(s, room, 0, { bob: t % 2, flip: false });
+          const shot = room - 4 - ((t * 3) % Math.max(4, room - 2));
+          if (shot >= 0) art(s, shot, 6, SHOT, { o: '#e5a50a' });
+        } else if (v.act === 'ask') {
+          pet(s, 0, 0);
+          if (t % 2 === 0) art(s, icon + 1, 1, QUESTION, { q: '#d0021b' });
+        } else {
+          pet(s, walkX(t, room), 0, { flip: walkFlip(t, room), bob: t % 2, blink: t % 9 === 0 });
+        }
+    }
+    paint(canvas, s, LCD);
+  }
+
+  // ---- the plugin's hunger rules (hooks/hunger.ts) ----
+  const REST = [[720, 840], [1080, 480]];
+  const inWin = (m, [a, b]) => (a < b ? m >= a && m < b : m >= a || m < b);
+  const isResting = m => REST.some(w => inWin(((m % 1440) + 1440) % 1440, w));
+  const nextRest = m => (isResting(m) ? m : m + Math.min(...REST.map(([a]) => ((a - (m % 1440)) + 1440) % 1440)));
+  const restEnd = m => { let t = m; while (isResting(t) && t - m < 1440) t++; return t; };
+  const hhmm = m => { m = ((Math.floor(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+  const hungerOf = min => (min >= 60 ? 'cold' : min >= 55 ? 'starving' : min >= 45 ? 'hungry' : min >= 30 ? 'peckish' : 'full');
+  const HUNGER_COLOR = { full: '#7bd88f', peckish: '#e5c07b', hungry: '#ff8f40', starving: '#ff5f57', cold: '#8a8a8a' };
+  const hearts = (h, left) => { const n = h === 'cold' ? 0 : Math.max(1, Math.ceil((4 * left) / 60)); return '♥'.repeat(n) + '♡'.repeat(4 - n); };
+
+  const st = { lastPrompt: 540, minutes: 0, act: 'idle', side: false, brk: false, sleep: false, mistakes: 0, sickTurns: 0, eatingUntil: 0, breakUntil: 0, toastUntil: 0, toastText: '', notified: '', notifUntil: 0 };
+  const $ = id => document.getElementById(id);
+
+  function quietOf(now) {
+    if (st.side) return 'side';
+    if (st.sleep) return 'asleep';
+    if (st.brk) return 'break';
+    if (isResting(now)) return 'rest';
+    return null;
+  }
+  function quietText(q, now) {
+    if (q === 'side') return 'side session · not hungry';
+    if (q === 'asleep') return '💤 asleep until your next prompt';
+    if (q === 'break') return '☕ on break until ' + hhmm(st.breakUntil);
+    if (q === 'rest') return '💤 resting until ' + hhmm(restEnd(now));
+    return null;
+  }
+  function warningOf(now) {
+    if (quietOf(now)) return null;
+    const h = hungerOf(st.minutes);
+    if (h !== 'hungry' && h !== 'starving') return null;
+    if (nextRest(now) < st.lastPrompt + 60) return null;
+    return h;
+  }
+
+  function view() {
+    const now = st.lastPrompt + st.minutes;
+    const q = quietOf(now);
+    const hunger = q ? 'full' : hungerOf(st.minutes);
+    const nap = q === 'rest' || q === 'break' || q === 'asleep';
+    const mood = performance.now() < st.eatingUntil ? 'eating' : st.sickTurns > 0 ? 'sick' : nap ? 'asleep' : 'normal';
+    return { now, q, hunger, mood, act: st.act === 'idle' ? null : st.act, left: Math.max(0, 60 - st.minutes), warn: warningOf(now) };
+  }
+
+  function speech(v) {
+    if (v.mood === 'eating') return 'Nom nom! The cache is warm again.';
+    if (v.mood === 'sick') return 'I got sick waiting… the cache went cold and had to be rebuilt.';
+    if (v.mood === 'asleep') return 'Zzz…';
+    if (v.hunger === 'hungry' && v.warn) return "I'm hungry! my-app's cache goes cold in " + Math.ceil(v.left) + 'm.';
+    if (v.hunger === 'starving' && v.warn) return 'STARVING!! ' + Math.ceil(v.left) + "m until my-app's cache goes cold!";
+    if (v.act === 'think') return 'Thinking…';
+    if (v.act === 'tool') return 'Bash: npm test';
+    if (v.act === 'ask') return 'Waiting for your OK!';
+    if (v.hunger === 'cold') return 'The cache went cold. Send a prompt to warm it up.';
+    if (v.hunger === 'peckish') return 'Getting a little peckish…';
+    return '';
+  }
+
+  const STATE_LABEL = { full: 'Full', peckish: 'Peckish', hungry: 'Hungry', starving: 'Starving', cold: 'Cache cold' };
+  let frame = 0;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function render() {
+    const v = view();
+    const t = reduced ? 0 : frame;
+    drawLcd($('lcd'), v, t);
+    const loud = v.mood === 'eating' || v.mood === 'sick' || !!v.warn;
+    const wrap = $('lcdWrap');
+    wrap.classList.toggle('loud', loud);
+    wrap.style.color = v.mood === 'sick' ? '#6b4f9e' : v.mood === 'eating' ? '#7bd88f' : HUNGER_COLOR[v.hunger];
+    const say = speech(v);
+    $('say').textContent = say ? '“' + say : '';
+    $('say').style.color = v.warn ? HUNGER_COLOR[v.hunger] : v.act === 'ask' ? '#ff5f57' : v.act === 'tool' ? '#e5c07b' : v.mood === 'sick' ? '#b48ad0' : '#61afef';
+    const qt = quietText(v.q, v.now);
+    $('hungerLine').innerHTML = qt
+      ? '<span class="t-dim">' + qt + '</span>'
+      : '<span style="color:' + HUNGER_COLOR[v.hunger] + '">Hunger ' + hearts(v.hunger, v.left) + '</span><span class="t-dim">  ' + (v.hunger === 'cold' ? 'cache cold' : Math.ceil(v.left) + 'm left') + '</span>';
+    $('hint').textContent = v.warn ? 'Prompt to feed · /digi sleep if done' : '';
+    $('statusline').textContent = v.warn === 'starving' ? '🍖 Digi: cache cold in ' + Math.ceil(v.left) + 'm' : '';
+
+    // Alerts fire once per level per meal.
+    const level = v.warn ? v.warn + '@' + st.lastPrompt : '';
+    if (v.warn && st.notified !== level) {
+      st.notified = level;
+      const left = Math.ceil(v.left);
+      const title = v.warn === 'hungry' ? 'Digi is hungry' : 'Digi is starving!';
+      const body = v.warn === 'hungry'
+        ? 'my-app: the cache goes cold in ' + left + "m. Send a prompt to feed it, or /digi sleep if you're done."
+        : 'my-app: ' + left + 'm until the cache goes cold and has to be rebuilt.';
+      st.toastText = title + ' · ' + body;
+      st.toastUntil = performance.now() + 4000;
+      $('notifTitle').textContent = title;
+      $('notifBody').textContent = body;
+      st.notifUntil = performance.now() + 4000;
+    }
+    $('toast').hidden = performance.now() > st.toastUntil;
+    $('toast').textContent = st.toastText;
+    $('notif').hidden = performance.now() > st.notifUntil;
+
+    $('clock').textContent = hhmm(v.now);
+    $('minLabel').textContent = st.minutes;
+    const name = v.q ? { side: 'Side session', asleep: 'Asleep', break: 'On a break', rest: 'Resting' }[v.q] : STATE_LABEL[v.hunger];
+    $('stateName').textContent = name;
+    $('stateName').style.color = v.q ? 'var(--muted)' : 'var(--' + v.hunger + ')';
+    let detail = '';
+    if (!v.q && (v.hunger === 'hungry' || v.hunger === 'starving') && !v.warn) detail = 'quiet: a rest window starts before the cache would go cold';
+    else if (!v.q && v.hunger !== 'cold') detail = 'cache cold in ' + Math.ceil(v.left) + ' min';
+    $('stateDetail').textContent = detail;
+  }
+
+  function feed() {
+    const now = st.lastPrompt + st.minutes;
+    const wasCold = st.minutes >= 60;
+    const excused = st.side || st.sleep || st.brk || nextRest(st.lastPrompt) <= now;
+    let msg = '';
+    if (wasCold && !excused) {
+      if (st.mistakes === 0) {
+        st.mistakes = 1; st.sickTurns = 3;
+        msg = ' The cache went cold on a working day: <b>one care mistake</b>, sick for 3 turns.';
+      } else msg = ' Cold again, but this session already has one today, so it does not count.';
+    } else if (wasCold) msg = ' The cache went cold, but that was excused. No care mistake.';
+    const hungry = ['hungry', 'starving', 'cold'].includes(hungerOf(st.minutes)) && !quietOf(now);
+    if (st.sickTurns > 0 && !(wasCold && !excused && st.mistakes === 1 && msg.includes('one care'))) st.sickTurns--;
+    if (hungry && st.sickTurns === 0) st.eatingUntil = performance.now() + 2200;
+    // A prompt ends a break and /digi sleep.
+    st.brk = false; st.sleep = false; $('brk').checked = false; $('sleep').checked = false;
+    st.lastPrompt = now; st.minutes = 0; st.notified = '';
+    $('minutes').value = 0;
+    $('log').innerHTML = 'Care mistakes today: <b>' + st.mistakes + '</b>.' + msg;
+    render();
+  }
+
+  let timer = null;
+  function setPlay(on) {
+    $('play').setAttribute('aria-pressed', on);
+    $('play').textContent = on ? 'Pause' : 'Play';
+    clearInterval(timer);
+    if (on) timer = setInterval(() => {
+      if (st.minutes >= 70) return setPlay(false);
+      st.minutes++; $('minutes').value = st.minutes; render();
+    }, 140);
+  }
+
+  $('minutes').addEventListener('input', e => { st.minutes = +e.target.value; render(); });
+  $('feed').addEventListener('click', feed);
+  $('play').addEventListener('click', () => setPlay($('play').getAttribute('aria-pressed') !== 'true'));
+  for (const [id, key] of [['lpSeg', 'lastPrompt'], ['actSeg', 'act']]) {
+    $(id).addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      [...$(id).children].forEach(x => x.setAttribute('aria-pressed', x === b));
+      st[key] = key === 'lastPrompt' ? +b.dataset.v : b.dataset.v;
+      if (key === 'lastPrompt') { st.minutes = 0; $('minutes').value = 0; st.notified = ''; st.mistakes = 0; $('log').innerHTML = 'Care mistakes today: <b>0</b>'; }
+      render();
+    });
+  }
+  $('side').addEventListener('change', e => { st.side = e.target.checked; render(); });
+  $('brk').addEventListener('change', e => { st.brk = e.target.checked; st.breakUntil = st.lastPrompt + st.minutes + 90; render(); });
+  $('sleep').addEventListener('change', e => { st.sleep = e.target.checked; render(); });
+
+  // ---- the gallery of band states ----
+  const GALLERY = [
+    { cap: 'Idle: it walks about between turns.', v: { hunger: 'full', mood: 'normal', act: null, left: 48 }, say: '', line: 'full' },
+    { cap: 'Thinking: pacing while Claude thinks.', v: { hunger: 'full', mood: 'normal', act: 'think', left: 40 }, say: 'Thinking…', color: '#61afef', line: 'full' },
+    { cap: 'Running a tool: it fires at the wall, and the bubble names the tool.', v: { hunger: 'full', mood: 'normal', act: 'tool', left: 40 }, say: 'Bash: npm test', color: '#e5c07b', line: 'full' },
+    { cap: 'Waiting for your OK on a permission prompt.', v: { hunger: 'full', mood: 'normal', act: 'ask', left: 40 }, say: 'Waiting for your OK!', color: '#ff5f57', line: 'full' },
+    { cap: 'Hungry: stamping, with a toast and a macOS notification.', v: { hunger: 'hungry', mood: 'normal', act: null, left: 12 }, say: "I'm hungry! The cache goes cold in 12m.", color: '#ff8f40', line: 'hungry', loud: true },
+    { cap: 'Resting: lunch, evenings, breaks and /digi sleep.', v: { hunger: 'full', mood: 'asleep', act: null, left: 30 }, say: 'Zzz…', color: '#61afef', quiet: '💤 resting until 14:00' },
+    { cap: 'Sick: three turns after a care mistake.', v: { hunger: 'full', mood: 'sick', act: null, left: 58 }, say: 'I got sick waiting…', color: '#b48ad0', line: 'full', loud: true },
+    { cap: 'Eating: the first prompt after it got hungry.', v: { hunger: 'full', mood: 'eating', act: null, left: 60 }, say: 'Nom nom!', color: '#7bd88f', line: 'full', loud: true },
+  ];
+  const bands = $('bands');
+  const minis = GALLERY.map(g => {
+    const fig = document.createElement('figure');
+    const box = document.createElement('div');
+    box.className = 'mini';
+    const text = document.createElement('div');
+    text.className = 'band-text';
+    const hl = g.quiet ? '<span class="t-dim">' + g.quiet + '</span>' : '<span style="color:' + HUNGER_COLOR[g.line] + '">Hunger ' + hearts(g.line, g.v.left) + '</span><span class="t-dim">  ' + g.v.left + 'm left</span>';
+    text.innerHTML = '<div><b style="color:#fff">Digi</b> <span class="t-dim">· Baby I</span></div>' + (g.say ? '<div style="color:' + g.color + '">“' + g.say + '</div>' : '<div>&nbsp;</div>') + '<div>' + hl + '</div>';
+    const cv = document.createElement('canvas');
+    cv.width = 32; cv.height = 16;
+    cv.setAttribute('aria-hidden', 'true');
+    if (g.loud) { cv.style.outline = '1px solid ' + (g.v.mood === 'sick' ? '#6b4f9e' : g.v.mood === 'eating' ? '#7bd88f' : HUNGER_COLOR[g.line]); cv.style.outlineOffset = '3px'; }
+    box.append(text, cv);
+    const cap = document.createElement('figcaption');
+    cap.textContent = g.cap;
+    fig.append(box, cap);
+    bands.append(fig);
+    return { cv, v: { ...g.v, warn: g.v.hunger === 'hungry' ? 'hungry' : null } };
+  });
+  // The one-row fallback.
+  const fig = document.createElement('figure');
+  fig.innerHTML = '<div class="mini one"><span><span style="color:#7bd88f">(^▽^)</span> <b style="color:#fff">Digi</b><span class="t-dim"> · Baby I</span>   <span style="color:#7bd88f">♥♥♥♥</span><span style="color:#7bd88f"> 48m</span></span></div><figcaption>Short on room: one line, still at the right edge.</figcaption>';
+  bands.append(fig);
+
+  // ---- the battle lab: the plugin's rules, one turn at a time ----
+  const lab = { red: new Set(), won: 0, lost: 0, flash: 0 };
+  const labCv = $('labCanvas'), labCtx = labCv.getContext('2d');
+  const BLOB = ['..v..v..', '.vvvvvv.', 'vvwvvwvv', 'vvkvvkvv', 'vvvvvvvv', '.vvmmvv.', '.v.vv.v.', 'v..vv..v'];
+  const BLOB_COLORS = { v: '#d0021b', w: '#ffffff', k: '#1d2418', m: '#5c0010' };
+  function drawLab(t) {
+    labCtx.clearRect(0, 0, 64, 16);
+    labCtx.fillStyle = '#3a4034';
+    for (let x = 0; x < 64; x += 2) labCtx.fillRect(x, 15, 1, 1);
+    if (lab.flash > 0) {
+      // The boss blows up: a ring of sparks flying out from where it stood.
+      const r = (7 - lab.flash) * 2;
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * 2 * Math.PI;
+        labCtx.fillStyle = i % 2 ? '#f1c40f' : '#e67e22';
+        labCtx.fillRect(Math.round(14 + Math.cos(a) * r), Math.round(7 + Math.sin(a) * r * 0.6), 2, 2);
+      }
+      labCtx.fillStyle = '#ffffff';
+      labCtx.fillRect(13, 6, 3, 3);
+      return;
+    }
+    if (!lab.red.size) return;
+    const bx = 6 + (t % 4 === 0 ? 1 : 0);
+    BLOB.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch === '.') return;
+      labCtx.fillStyle = BLOB_COLORS[ch];
+      labCtx.fillRect(bx + x * 2, y * 2, 2, 2);
+    }));
+    const p = t % 8;
+    labCtx.fillStyle = '#e5a50a';
+    if (p < 6) labCtx.fillRect(58 - Math.floor((36 * p) / 5), 7, 3, 2);
+    else { labCtx.fillStyle = '#f1c40f'; labCtx.fillRect(20, 5, 3, 5); }
+  }
+  function labShow(text) {
+    $('labLog').textContent = text;
+    $('labRed').textContent = lab.red.size ? lab.red.size + ' check' + (lab.red.size > 1 ? 's' : '') + ' red: ' + [...lab.red].join(', ') : '';
+    $('labScore').textContent = 'WINS ' + lab.won;
+    $('labWon').textContent = lab.won;
+    $('labLost').textContent = lab.lost;
+    const fought = lab.won + lab.lost;
+    $('labRatio').textContent = fought ? Math.floor((100 * lab.won) / fought) + '%' : '–';
+  }
+  function labRun(runner, isPass) {
+    if (!isPass) {
+      const isNew = !lab.red.has(runner);
+      lab.red.add(runner);
+      return labShow(isNew ? runner + ' failed: a battle starts.' : runner + ' failed again: still the same battle.');
+    }
+    if (lab.red.delete(runner)) {
+      lab.won++; lab.flash = 6;
+      return labShow(runner + ' passes again: battle won. +2 DEF.');
+    }
+    labShow(runner + ' passed with nothing failing: no battle, +2 DEF.');
+  }
+  $('labTestFail').addEventListener('click', () => labRun('npm test', false));
+  $('labTestPass').addEventListener('click', () => labRun('npm test', true));
+  $('labTscFail').addEventListener('click', () => labRun('tsc', false));
+  $('labTscPass').addEventListener('click', () => labRun('tsc', true));
+  $('labEnd').addEventListener('click', () => {
+    const n = lab.red.size;
+    lab.lost += n; lab.red.clear();
+    labShow(n ? 'The turn ended with ' + n + ' check' + (n > 1 ? 's' : '') + ' still red: ' + n + ' lost. A new turn begins.' : 'The turn ended. A new turn begins.');
+  });
+  $('labAbort').addEventListener('click', () => {
+    const n = lab.red.size;
+    lab.red.clear();
+    labShow(n ? 'Interrupted: the open battle counts neither way, and the interrupt is a risky move.' : 'Interrupted: a risky move, no battle.');
+  });
+  let labT = 0;
+  drawLab(0);
+  if (!reduced) setInterval(() => { labT++; if (lab.flash > 0) lab.flash--; drawLab(labT); }, 160);
+  else setInterval(() => { if (lab.flash > 0) lab.flash--; drawLab(0); }, 500);
+
+  function tick() {
+    const t = reduced ? 0 : frame;
+    minis.forEach(m => drawLcd(m.cv, m.v, m.v.mood === 'eating' ? t % 6 : t));
+    render();
+    frame++;
+  }
+  tick();
+  if (!reduced) setInterval(tick, 500);
+  else setInterval(render, 500);
+})();
+</script>

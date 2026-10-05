@@ -1,0 +1,15 @@
+{
+  "name": "digi-pet",
+  "owner": {
+    "name": "trongtaiz",
+    "email": "trongtai1112@gmail.com"
+  },
+  "description": "digi-pet: a Digimon V-Pet for Claude Code",
+  "plugins": [
+    {
+      "name": "digi-pet",
+      "source": "./plugin",
+      "description": "A Digimon V-Pet above the prompt that eats this session's prompt cache"
+    }
+  ]
+}

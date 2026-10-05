@@ -1,0 +1,5098 @@
+{
+  "source": "https://humulos.com/digimon/dmc/",
+  "note": "Digital Monster Color evolution charts as Digitama Hatchery (humulos.com) documents them. Sprites © Bandai. Personal use only.",
+  "versions": [
+    {
+      "version": "Ver.1",
+      "chart": "c1",
+      "digitama": "https://humulos.com/digimon/images/dot/dmc/digitama_c1.gif",
+      "ids": [
+        "bota",
+        "koro",
+        "agu",
+        "beta",
+        "grey",
+        "devi",
+        "airdra",
+        "nume",
+        "tyrano",
+        "mera",
+        "seadra",
+        "metalgrey_vi",
+        "monzae",
+        "mame",
+        "blitzgrey",
+        "shinmonzae",
+        "banchomame",
+        "cresgaruru",
+        "omega_a"
+      ]
+    },
+    {
+      "version": "Ver.2",
+      "chart": "c2",
+      "digitama": "https://humulos.com/digimon/images/dot/dmc/digitama_c2.gif",
+      "ids": [
+        "puni",
+        "tuno",
+        "gabu",
+        "elec",
+        "kabuteri",
+        "ange",
+        "birdra",
+        "vegi",
+        "garuru",
+        "yukidaru",
+        "wha",
+        "skullgrey",
+        "vade",
+        "metalmame",
+        "skullmam",
+        "ebe",
+        "cresgaruru",
+        "blitzgrey",
+        "omega_a"
+      ]
+    },
+    {
+      "version": "Ver.3",
+      "chart": "c3",
+      "digitama": "https://humulos.com/digimon/images/dot/dmc/digitama_c3.gif",
+      "ids": [
+        "poyo",
+        "toko",
+        "pata",
+        "kune",
+        "uni",
+        "ogre",
+        "shell",
+        "scu",
+        "cental",
+        "bake",
+        "drimoge",
+        "andro",
+        "ete",
+        "chimaira",
+        "giro",
+        "hiandro",
+        "bancholeo",
+        "goku",
+        "darkdra",
+        "chaos",
+        "mugendra",
+        "millenniu"
+      ]
+    },
+    {
+      "version": "Ver.4",
+      "chart": "c4",
+      "digitama": "https://humulos.com/digimon/images/dot/dmc/digitama_c4.gif",
+      "ids": [
+        "yura",
+        "tane",
+        "piyo",
+        "pal",
+        "monochro",
+        "leo",
+        "coela",
+        "nani",
+        "cockatri",
+        "kuwaga",
+        "mojya",
+        "megadra",
+        "digitama",
+        "piccolo",
+        "darkdra",
+        "gankoo",
+        "bloomlord",
+        "bancholeo",
+        "chaos",
+        "mugendra",
+        "chaosdra"
+      ]
+    },
+    {
+      "version": "Ver.5",
+      "chart": "c5",
+      "digitama": "https://humulos.com/digimon/images/dot/dmc/digitama_c5.gif",
+      "ids": [
+        "zuru",
+        "pagu",
+        "gazi",
+        "giza",
+        "darktyrano",
+        "devidra",
+        "fly",
+        "rare",
+        "cyclo",
+        "tusk",
+        "delta",
+        "metaltyrano",
+        "extyrano",
+        "nano",
+        "mugendra",
+        "gaiou",
+        "raiden",
+        "chimaira",
+        "millenniu",
+        "darkdra",
+        "chaosdra"
+      ]
+    }
+  ],
+  "species": {
+    "bota": {
+      "id": "bota",
+      "name": "Botamon",
+      "stage": "I",
+      "stageLabel": "Stage I (Baby I)",
+      "attribute": "Free",
+      "from": [],
+      "evolvesTo": [
+        {
+          "to": "koro",
+          "name": "Koromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "No requirements"
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 3,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/bota.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/bota.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "koro": {
+      "id": "koro",
+      "name": "Koromon",
+      "stage": "II",
+      "stageLabel": "Stage II (Baby II)",
+      "attribute": "Free",
+      "from": [
+        "bota"
+      ],
+      "evolvesTo": [
+        {
+          "to": "agu",
+          "name": "Agumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "to": "beta",
+          "name": "Betamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 30,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/koro.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/koro.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "agu": {
+      "id": "agu",
+      "name": "Agumon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Vaccine",
+      "from": [
+        "koro"
+      ],
+      "evolvesTo": [
+        {
+          "to": "grey",
+          "name": "Greymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "tyrano",
+          "name": "Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-15 Training, 3+ Overfeed, 4-5 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 15
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 4,
+                "max": 5
+              }
+            }
+          ]
+        },
+        {
+          "to": "devi",
+          "name": "Devimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 31
+              }
+            }
+          ]
+        },
+        {
+          "to": "mera",
+          "name": "Meramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 16+ Training, 3+ Overfeed, 6+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 16,
+                "max": null
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 6,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "nume",
+          "name": "Numemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-4 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 4
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-2 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 2
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-15 Training, 3+ Overfeed, 0-3 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 15
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-15 Training, 3+ Overfeed, 6+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 15
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 6,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 16+ Training, 3+ Overfeed, 0-5 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 16,
+                "max": null
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 5
+              }
+            }
+          ]
+        }
+      ],
+      "power": 30,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/agu.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/agu.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "beta": {
+      "id": "beta",
+      "name": "Betamon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Virus",
+      "from": [
+        "koro"
+      ],
+      "evolvesTo": [
+        {
+          "to": "airdra",
+          "name": "Airdramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 0-3 Overfeed, 9+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              },
+              "sleepDisturbances": {
+                "min": 9,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "seadra",
+          "name": "Seadramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 4+ Overfeed, 0-8 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 8
+              }
+            }
+          ]
+        },
+        {
+          "to": "devi",
+          "name": "Devimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 48+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 48,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "mera",
+          "name": "Meramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-47 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 47
+              }
+            }
+          ]
+        },
+        {
+          "to": "nume",
+          "name": "Numemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-7 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 7
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 4+ Overfeed, 9+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 9,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 0-3 Overfeed, 0-8 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 8
+              }
+            }
+          ]
+        }
+      ],
+      "power": 25,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/beta.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/beta.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "grey": {
+      "id": "grey",
+      "name": "Greymon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "agu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalgrey_vi",
+          "name": "Metal Greymon (Virus)",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/grey.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/grey.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "devi": {
+      "id": "devi",
+      "name": "Devimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "agu",
+        "beta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalgrey_vi",
+          "name": "Metal Greymon (Virus)",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/devi.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/devi.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "airdra": {
+      "id": "airdra",
+      "name": "Airdramon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "beta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalgrey_vi",
+          "name": "Metal Greymon (Virus)",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/airdra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/airdra.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "nume": {
+      "id": "nume",
+      "name": "Numemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "agu",
+        "beta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "monzae",
+          "name": "Monzaemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 40,
+      "hungerLossMinutes": 28,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/nume.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/nume.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "tyrano": {
+      "id": "tyrano",
+      "name": "Tyrannomon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "agu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "mame",
+          "name": "Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/tyrano.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/tyrano.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "mera": {
+      "id": "mera",
+      "name": "Meramon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "agu",
+        "beta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "mame",
+          "name": "Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/mera.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/mera.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "seadra": {
+      "id": "seadra",
+      "name": "Seadramon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "beta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "mame",
+          "name": "Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/seadra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/seadra.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "metalgrey_vi": {
+      "id": "metalgrey_vi",
+      "name": "MetalGreymon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "grey",
+        "devi",
+        "airdra"
+      ],
+      "evolvesTo": [
+        {
+          "to": "blitzgrey",
+          "name": "Blitz Greymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/metalgrey_vi.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/metalgrey_vi.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "monzae": {
+      "id": "monzae",
+      "name": "Monzaemon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Vaccine",
+      "from": [
+        "nume"
+      ],
+      "evolvesTo": [
+        {
+          "to": "shinmonzae",
+          "name": "Shin Monzaemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/monzae.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/monzae.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "mame": {
+      "id": "mame",
+      "name": "Mamemon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Data",
+      "from": [
+        "tyrano",
+        "mera",
+        "seadra"
+      ],
+      "evolvesTo": [
+        {
+          "to": "banchomame",
+          "name": "Bancho Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 85,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/mame.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/mame.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "blitzgrey": {
+      "id": "blitzgrey",
+      "name": "BlitzGreymon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "metalgrey_vi"
+      ],
+      "evolvesTo": [
+        {
+          "to": "omega_a",
+          "name": "Omegamon Alter-S",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Cres Garurumon from Ver.2",
+              "jogress": {
+                "with": "Cres Garurumon",
+                "version": "Ver.2"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 170,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/blitzgrey.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/blitzgrey.gif"
+      ],
+      "versions": [
+        "Ver.1",
+        "Ver.2"
+      ]
+    },
+    "shinmonzae": {
+      "id": "shinmonzae",
+      "name": "ShinMonzaemon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "monzae"
+      ],
+      "evolvesTo": [],
+      "power": 170,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/shinmonzae.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/shinmonzae.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "banchomame": {
+      "id": "banchomame",
+      "name": "BanchoMamemon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Data",
+      "from": [
+        "mame"
+      ],
+      "evolvesTo": [],
+      "power": 150,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/banchomame.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/banchomame.gif"
+      ],
+      "versions": [
+        "Ver.1"
+      ]
+    },
+    "cresgaruru": {
+      "id": "cresgaruru",
+      "name": "CresGarurumon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Data",
+      "from": [
+        "metalmame"
+      ],
+      "evolvesTo": [
+        {
+          "to": "omega_a",
+          "name": "Omegamon Alter-S",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Blitz Greymon from Ver.1",
+              "jogress": {
+                "with": "Blitz Greymon",
+                "version": "Ver.1"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 150,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/cresgaruru.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/cresgaruru.gif"
+      ],
+      "versions": [
+        "Ver.1",
+        "Ver.2"
+      ]
+    },
+    "omega_a": {
+      "id": "omega_a",
+      "name": "Omnimon Alter-S",
+      "stage": "VI+",
+      "stageLabel": "Stage VI+ (Super Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "blitzgrey",
+        "cresgaruru"
+      ],
+      "evolvesTo": [],
+      "power": 200,
+      "hungerLossMinutes": 66,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/omega_a.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/omega_a.gif"
+      ],
+      "versions": [
+        "Ver.1",
+        "Ver.2"
+      ]
+    },
+    "puni": {
+      "id": "puni",
+      "name": "Punimon",
+      "stage": "I",
+      "stageLabel": "Stage I (Baby I)",
+      "attribute": "Free",
+      "from": [],
+      "evolvesTo": [
+        {
+          "to": "tuno",
+          "name": "Tsunomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "No requirements"
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 3,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/puni.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/puni.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "tuno": {
+      "id": "tuno",
+      "name": "Tsunomon",
+      "stage": "II",
+      "stageLabel": "Stage II (Baby II)",
+      "attribute": "Free",
+      "from": [
+        "puni"
+      ],
+      "evolvesTo": [
+        {
+          "to": "gabu",
+          "name": "Gabumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "to": "elec",
+          "name": "Elecmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 30,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/tuno.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/tuno.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "gabu": {
+      "id": "gabu",
+      "name": "Gabumon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Data",
+      "from": [
+        "tuno"
+      ],
+      "evolvesTo": [
+        {
+          "to": "kabuteri",
+          "name": "Kabuterimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 48+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 48,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "garuru",
+          "name": "Garurumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-31 Training, 3+ Overfeed, 4-5 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 4,
+                "max": 5
+              }
+            }
+          ]
+        },
+        {
+          "to": "ange",
+          "name": "Angemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-47 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 47
+              }
+            }
+          ]
+        },
+        {
+          "to": "yukidaru",
+          "name": "Yukidarumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training, 3+ Overfeed, 6+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 6,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "vegi",
+          "name": "Vegimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-4 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 4
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-2 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 2
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-31 Training, 3+ Overfeed, 0-3 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-31 Training, 3+ Overfeed, 6+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 6,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training, 3+ Overfeed, 0-5 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "overfeed": {
+                "min": 3,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 5
+              }
+            }
+          ]
+        }
+      ],
+      "power": 30,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/gabu.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/gabu.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "elec": {
+      "id": "elec",
+      "name": "Elecmon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Data",
+      "from": [
+        "tuno"
+      ],
+      "evolvesTo": [
+        {
+          "to": "birdra",
+          "name": "Birdramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-47 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 47
+              }
+            }
+          ]
+        },
+        {
+          "to": "wha",
+          "name": "Whamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training, 6+ Overfeed, 4+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "overfeed": {
+                "min": 6,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "ange",
+          "name": "Angemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 48+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 48,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "yukidaru",
+          "name": "Yukidarumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 0-5 Overfeed, 6+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 5
+              },
+              "sleepDisturbances": {
+                "min": 6,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "vegi",
+          "name": "Vegimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-7 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 7
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training, 0-5 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 5
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 6+ Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "overfeed": {
+                "min": 6,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 32+ Training, 0-3 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 8-31 Training, 0-5 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 8,
+                "max": 31
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 5
+              }
+            }
+          ]
+        }
+      ],
+      "power": 25,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/elec.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/elec.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "kabuteri": {
+      "id": "kabuteri",
+      "name": "Kabuterimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "gabu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "skullgrey",
+          "name": "Skull Greymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/kabuteri.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/kabuteri.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "ange": {
+      "id": "ange",
+      "name": "Angemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "gabu",
+        "elec"
+      ],
+      "evolvesTo": [
+        {
+          "to": "skullgrey",
+          "name": "Skull Greymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/ange.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/ange.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "birdra": {
+      "id": "birdra",
+      "name": "Birdramon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "elec"
+      ],
+      "evolvesTo": [
+        {
+          "to": "skullgrey",
+          "name": "Skull Greymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/birdra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/birdra.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "vegi": {
+      "id": "vegi",
+      "name": "Vegiemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gabu",
+        "elec"
+      ],
+      "evolvesTo": [
+        {
+          "to": "vade",
+          "name": "Vademon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 40,
+      "hungerLossMinutes": 28,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/vegi.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/vegi.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "garuru": {
+      "id": "garuru",
+      "name": "Garurumon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "gabu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalmame",
+          "name": "Metal Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/garuru.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/garuru.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "yukidaru": {
+      "id": "yukidaru",
+      "name": "Frigimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "gabu",
+        "elec"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalmame",
+          "name": "Metal Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/yukidaru.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/yukidaru.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "wha": {
+      "id": "wha",
+      "name": "Whamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "elec"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metalmame",
+          "name": "Metal Mamemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/wha.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/wha.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "skullgrey": {
+      "id": "skullgrey",
+      "name": "SkullGreymon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "kabuteri",
+        "ange",
+        "birdra"
+      ],
+      "evolvesTo": [
+        {
+          "to": "skullmam",
+          "name": "Skull Mammon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/skullgrey.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/skullgrey.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "vade": {
+      "id": "vade",
+      "name": "Vademon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "vegi"
+      ],
+      "evolvesTo": [
+        {
+          "to": "ebe",
+          "name": "Ebemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/vade.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/vade.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "metalmame": {
+      "id": "metalmame",
+      "name": "MetalMamemon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Data",
+      "from": [
+        "garuru",
+        "yukidaru",
+        "wha"
+      ],
+      "evolvesTo": [
+        {
+          "to": "cresgaruru",
+          "name": "Cres Garurumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 85,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/metalmame.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/metalmame.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "skullmam": {
+      "id": "skullmam",
+      "name": "SkullMammothmon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "skullgrey"
+      ],
+      "evolvesTo": [],
+      "power": 170,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/skullmam.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/skullmam.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "ebe": {
+      "id": "ebe",
+      "name": "Ebemon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "vade"
+      ],
+      "evolvesTo": [],
+      "power": 170,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/ebe.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/ebe.gif"
+      ],
+      "versions": [
+        "Ver.2"
+      ]
+    },
+    "poyo": {
+      "id": "poyo",
+      "name": "Poyomon",
+      "stage": "I",
+      "stageLabel": "Stage I (Baby I)",
+      "attribute": "Free",
+      "from": [],
+      "evolvesTo": [
+        {
+          "to": "toko",
+          "name": "Tokomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "No requirements"
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 3,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/poyo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/poyo.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "toko": {
+      "id": "toko",
+      "name": "Tokomon",
+      "stage": "II",
+      "stageLabel": "Stage II (Baby II)",
+      "attribute": "Free",
+      "from": [
+        "poyo"
+      ],
+      "evolvesTo": [
+        {
+          "to": "pata",
+          "name": "Patamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "to": "kune",
+          "name": "Kunemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 0,
+      "hungerLossMinutes": 30,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/toko.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/toko.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "pata": {
+      "id": "pata",
+      "name": "Patamon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Data",
+      "from": [
+        "toko"
+      ],
+      "evolvesTo": [
+        {
+          "to": "uni",
+          "name": "Unimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "cental",
+          "name": "Centaurmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 2+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "ogre",
+          "name": "Ogremon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 31
+              }
+            }
+          ]
+        },
+        {
+          "to": "bake",
+          "name": "Bakemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 2+ Overfeed, 0-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "to": "scu",
+          "name": "Scumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-4 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 4
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-1 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 1
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 5,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 3-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": 4
+              }
+            }
+          ]
+        }
+      ],
+      "power": 30,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/pata.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/pata.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "kune": {
+      "id": "kune",
+      "name": "Kunemon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Virus",
+      "from": [
+        "toko"
+      ],
+      "evolvesTo": [
+        {
+          "to": "shell",
+          "name": "Shellmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-7 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 7
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 24-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 24,
+                "max": 31
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 4+ Overfeed",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "drimoge",
+          "name": "Drimogemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 4+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "ogre",
+          "name": "Ogremon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "bake",
+          "name": "Bakemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-3 Overfeed, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "scu",
+          "name": "Scumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-23 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 23
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-3 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 25,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/kune.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/kune.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "uni": {
+      "id": "uni",
+      "name": "Unimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "pata"
+      ],
+      "evolvesTo": [
+        {
+          "to": "andro",
+          "name": "Andromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-31 Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 0,
+                "max": 31
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "chimaira",
+          "name": "Chimairamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "32+ Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/uni.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/uni.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "ogre": {
+      "id": "ogre",
+      "name": "Ogremon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "pata",
+        "kune"
+      ],
+      "evolvesTo": [
+        {
+          "to": "andro",
+          "name": "Andromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-31 Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 0,
+                "max": 31
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "chimaira",
+          "name": "Chimairamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "32+ Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/ogre.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/ogre.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "shell": {
+      "id": "shell",
+      "name": "Shellmon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "kune"
+      ],
+      "evolvesTo": [
+        {
+          "to": "andro",
+          "name": "Andromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-31 Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 0,
+                "max": 31
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "chimaira",
+          "name": "Chimairamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "32+ Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 32,
+                "max": null
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/shell.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/shell.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "scu": {
+      "id": "scu",
+      "name": "Sukamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "pata",
+        "kune"
+      ],
+      "evolvesTo": [
+        {
+          "to": "ete",
+          "name": "Etemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-39 Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 0,
+                "max": 39
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "chimaira",
+          "name": "Chimairamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "40+ Training, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "training": {
+                "min": 40,
+                "max": null
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 40,
+      "hungerLossMinutes": 28,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/scu.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/scu.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "cental": {
+      "id": "cental",
+      "name": "Centarumon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "pata"
+      ],
+      "evolvesTo": [
+        {
+          "to": "giro",
+          "name": "Giromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/cental.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/cental.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "bake": {
+      "id": "bake",
+      "name": "Bakemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "pata",
+        "kune"
+      ],
+      "evolvesTo": [
+        {
+          "to": "giro",
+          "name": "Giromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/bake.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/bake.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "drimoge": {
+      "id": "drimoge",
+      "name": "Drimogemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "kune"
+      ],
+      "evolvesTo": [
+        {
+          "to": "giro",
+          "name": "Giromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/drimoge.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/drimoge.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "andro": {
+      "id": "andro",
+      "name": "Andromon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Vaccine",
+      "from": [
+        "uni",
+        "ogre",
+        "shell"
+      ],
+      "evolvesTo": [
+        {
+          "to": "hiandro",
+          "name": "Hi Andromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/andro.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/andro.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "ete": {
+      "id": "ete",
+      "name": "Etemon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "scu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "bancholeo",
+          "name": "Bancho Leomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/ete.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/ete.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "chimaira": {
+      "id": "chimaira",
+      "name": "Kimeramon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Data",
+      "from": [
+        "uni",
+        "ogre",
+        "shell",
+        "scu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "bancholeo",
+          "name": "Bancho Leomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "millenniu",
+          "name": "Millenniumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Mugendramon from Ver.5",
+              "jogress": {
+                "with": "Mugendramon",
+                "version": "Ver.5"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/chimaira.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/chimaira.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.5"
+      ]
+    },
+    "giro": {
+      "id": "giro",
+      "name": "Giromon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Vaccine",
+      "from": [
+        "cental",
+        "bake",
+        "drimoge"
+      ],
+      "evolvesTo": [
+        {
+          "to": "goku",
+          "name": "Gokumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 85,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/giro.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/giro.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "hiandro": {
+      "id": "hiandro",
+      "name": "HiAndromon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "andro"
+      ],
+      "evolvesTo": [],
+      "power": 150,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/hiandro.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/hiandro.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "bancholeo": {
+      "id": "bancholeo",
+      "name": "BanchoLeomon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "ete",
+        "chimaira"
+      ],
+      "evolvesTo": [
+        {
+          "to": "chaos",
+          "name": "Chaosmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Darkdramon from Ver.4",
+              "jogress": {
+                "with": "Darkdramon",
+                "version": "Ver.4"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 180,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/bancholeo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/bancholeo.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.4"
+      ]
+    },
+    "goku": {
+      "id": "goku",
+      "name": "Reapermon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "giro"
+      ],
+      "evolvesTo": [],
+      "power": 170,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/goku.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/goku.gif"
+      ],
+      "versions": [
+        "Ver.3"
+      ]
+    },
+    "darkdra": {
+      "id": "darkdra",
+      "name": "Darkdramon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "megadra"
+      ],
+      "evolvesTo": [
+        {
+          "to": "chaos",
+          "name": "Chaosmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Bancho Leomon from Ver.3",
+              "jogress": {
+                "with": "Bancho Leomon",
+                "version": "Ver.3"
+              }
+            }
+          ]
+        },
+        {
+          "to": "chaosdra",
+          "name": "Chaosdramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Mugendramon from Ver.5",
+              "jogress": {
+                "with": "Mugendramon",
+                "version": "Ver.5"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 170,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/darkdra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/darkdra.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.4",
+        "Ver.5"
+      ]
+    },
+    "chaos": {
+      "id": "chaos",
+      "name": "Chaosmon",
+      "stage": "VI+",
+      "stageLabel": "Stage VI+ (Super Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "bancholeo",
+        "darkdra"
+      ],
+      "evolvesTo": [],
+      "power": 200,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/chaos.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/chaos.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.4"
+      ]
+    },
+    "mugendra": {
+      "id": "mugendra",
+      "name": "Machinedramon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "metaltyrano"
+      ],
+      "evolvesTo": [
+        {
+          "to": "millenniu",
+          "name": "Millenniumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Chimairamon from Ver.3",
+              "jogress": {
+                "with": "Chimairamon",
+                "version": "Ver.3"
+              }
+            }
+          ]
+        },
+        {
+          "to": "chaosdra",
+          "name": "Chaosdramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "Jogress with Darkdramon from Ver.4",
+              "jogress": {
+                "with": "Darkdramon",
+                "version": "Ver.4"
+              }
+            }
+          ]
+        }
+      ],
+      "power": 170,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/mugendra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/mugendra.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.4",
+        "Ver.5"
+      ]
+    },
+    "millenniu": {
+      "id": "millenniu",
+      "name": "Millenniumon",
+      "stage": "VI+",
+      "stageLabel": "Stage VI+ (Super Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "chimaira",
+        "mugendra"
+      ],
+      "evolvesTo": [],
+      "power": 200,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/millenniu.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/millenniu.gif"
+      ],
+      "versions": [
+        "Ver.3",
+        "Ver.5"
+      ]
+    },
+    "yura": {
+      "id": "yura",
+      "name": "Yuramon",
+      "stage": "I",
+      "stageLabel": "Stage I (Baby I)",
+      "attribute": "Free",
+      "from": [],
+      "evolvesTo": [
+        {
+          "to": "tane",
+          "name": "Tanemon",
+          "options": [
+            {
+              "other": [],
+              "raw": "No requirements"
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 3,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/yura.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/yura.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "tane": {
+      "id": "tane",
+      "name": "Tanemon",
+      "stage": "II",
+      "stageLabel": "Stage II (Baby II)",
+      "attribute": "Free",
+      "from": [
+        "yura"
+      ],
+      "evolvesTo": [
+        {
+          "to": "piyo",
+          "name": "Piyomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "to": "pal",
+          "name": "Palmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 0,
+      "hungerLossMinutes": 30,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/tane.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/tane.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "piyo": {
+      "id": "piyo",
+      "name": "Biyomon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Vaccine",
+      "from": [
+        "tane"
+      ],
+      "evolvesTo": [
+        {
+          "to": "monochro",
+          "name": "Monochromon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "cockatri",
+          "name": "Cockatrimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 2+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "leo",
+          "name": "Leomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 31
+              }
+            }
+          ]
+        },
+        {
+          "to": "kuwaga",
+          "name": "Kuwagamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 2+ Overfeed, 0-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "to": "nani",
+          "name": "Nanimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-4 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 4
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-1 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 1
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 5,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 3-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": 4
+              }
+            }
+          ]
+        }
+      ],
+      "power": 30,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/piyo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/piyo.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "pal": {
+      "id": "pal",
+      "name": "Palmon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Data",
+      "from": [
+        "tane"
+      ],
+      "evolvesTo": [
+        {
+          "to": "coela",
+          "name": "Coelamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-7 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 7
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 24-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 24,
+                "max": 31
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 4+ Overfeed",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "mojya",
+          "name": "Mojyamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 4+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "leo",
+          "name": "Leomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "kuwaga",
+          "name": "Kuwagamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-3 Overfeed, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "nani",
+          "name": "Nanimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-23 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 23
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-3 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 25,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/pal.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/pal.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "monochro": {
+      "id": "monochro",
+      "name": "Monochromon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "piyo"
+      ],
+      "evolvesTo": [
+        {
+          "to": "megadra",
+          "name": "Megadramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/monochro.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/monochro.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "leo": {
+      "id": "leo",
+      "name": "Leomon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "piyo",
+        "pal"
+      ],
+      "evolvesTo": [
+        {
+          "to": "megadra",
+          "name": "Megadramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/leo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/leo.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "coela": {
+      "id": "coela",
+      "name": "Coelamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "pal"
+      ],
+      "evolvesTo": [
+        {
+          "to": "megadra",
+          "name": "Megadramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/coela.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/coela.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "nani": {
+      "id": "nani",
+      "name": "Nanimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "piyo",
+        "pal"
+      ],
+      "evolvesTo": [
+        {
+          "to": "digitama",
+          "name": "Digitamamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 40,
+      "hungerLossMinutes": 28,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/nani.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/nani.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "cockatri": {
+      "id": "cockatri",
+      "name": "Kokatorimon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Data",
+      "from": [
+        "piyo"
+      ],
+      "evolvesTo": [
+        {
+          "to": "piccolo",
+          "name": "Piccolomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/cockatri.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/cockatri.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "kuwaga": {
+      "id": "kuwaga",
+      "name": "Kuwagamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "piyo",
+        "pal"
+      ],
+      "evolvesTo": [
+        {
+          "to": "piccolo",
+          "name": "Piccolomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/kuwaga.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/kuwaga.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "mojya": {
+      "id": "mojya",
+      "name": "Mojyamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Vaccine",
+      "from": [
+        "pal"
+      ],
+      "evolvesTo": [
+        {
+          "to": "piccolo",
+          "name": "Piccolomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/mojya.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/mojya.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "megadra": {
+      "id": "megadra",
+      "name": "Megadramon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "monochro",
+        "leo",
+        "coela"
+      ],
+      "evolvesTo": [
+        {
+          "to": "darkdra",
+          "name": "Darkdramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/megadra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/megadra.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "digitama": {
+      "id": "digitama",
+      "name": "Digitamamon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Data",
+      "from": [
+        "nani"
+      ],
+      "evolvesTo": [
+        {
+          "to": "gankoo",
+          "name": "Gankoomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/digitama.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/digitama.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "piccolo": {
+      "id": "piccolo",
+      "name": "Piximon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Data",
+      "from": [
+        "cockatri",
+        "kuwaga",
+        "mojya"
+      ],
+      "evolvesTo": [
+        {
+          "to": "bloomlord",
+          "name": "Bloom Lordmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 85,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/piccolo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/piccolo.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "gankoo": {
+      "id": "gankoo",
+      "name": "Gankoomon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Data",
+      "from": [
+        "digitama"
+      ],
+      "evolvesTo": [],
+      "power": 170,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/gankoo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/gankoo.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "bloomlord": {
+      "id": "bloomlord",
+      "name": "BloomLordmon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Vaccine",
+      "from": [
+        "piccolo"
+      ],
+      "evolvesTo": [],
+      "power": 150,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/bloomlord.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/bloomlord.gif"
+      ],
+      "versions": [
+        "Ver.4"
+      ]
+    },
+    "chaosdra": {
+      "id": "chaosdra",
+      "name": "Chaosdramon",
+      "stage": "VI+",
+      "stageLabel": "Stage VI+ (Super Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "darkdra",
+        "mugendra"
+      ],
+      "evolvesTo": [],
+      "power": 200,
+      "hungerLossMinutes": 66,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/chaosdra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/chaosdra.gif"
+      ],
+      "versions": [
+        "Ver.4",
+        "Ver.5"
+      ]
+    },
+    "zuru": {
+      "id": "zuru",
+      "name": "Zurumon",
+      "stage": "I",
+      "stageLabel": "Stage I (Baby I)",
+      "attribute": "Free",
+      "from": [],
+      "evolvesTo": [
+        {
+          "to": "pagu",
+          "name": "Pagumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "No requirements"
+            }
+          ]
+        }
+      ],
+      "power": null,
+      "hungerLossMinutes": 3,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/zuru.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/zuru.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "pagu": {
+      "id": "pagu",
+      "name": "Pagumon",
+      "stage": "II",
+      "stageLabel": "Stage II (Baby II)",
+      "attribute": "Free",
+      "from": [
+        "zuru"
+      ],
+      "evolvesTo": [
+        {
+          "to": "gazi",
+          "name": "Gazimon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              }
+            }
+          ]
+        },
+        {
+          "to": "giza",
+          "name": "Gizamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 0,
+      "hungerLossMinutes": 30,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/pagu.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/pagu.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "gazi": {
+      "id": "gazi",
+      "name": "Gazimon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Virus",
+      "from": [
+        "pagu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "darktyrano",
+          "name": "Dark Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "cyclo",
+          "name": "Cyclomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 2+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "devidra",
+          "name": "Devidramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 31
+              }
+            }
+          ]
+        },
+        {
+          "to": "tusk",
+          "name": "Tuskmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 2+ Overfeed, 0-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 2,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "to": "rare",
+          "name": "Raremon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-4 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 4
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-1 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 1
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 5,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 5-23 Training, 3-4 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 5,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": 4
+              }
+            }
+          ]
+        }
+      ],
+      "power": 30,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/gazi.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/gazi.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "giza": {
+      "id": "giza",
+      "name": "Gizamon",
+      "stage": "III",
+      "stageLabel": "Stage III (Child)",
+      "attribute": "Virus",
+      "from": [
+        "pagu"
+      ],
+      "evolvesTo": [
+        {
+          "to": "fly",
+          "name": "Flymon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 0-7 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 0,
+                "max": 7
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 24-31 Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 24,
+                "max": 31
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 4+ Overfeed",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              }
+            },
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "delta",
+          "name": "Deltamon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 24+ Training, 4+ Overfeed, 0-2 Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 24,
+                "max": null
+              },
+              "overfeed": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 0,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "to": "devidra",
+          "name": "Devidramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 32+ Training",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 32,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "tusk",
+          "name": "Tuskmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-3 Care Mistakes, 8-23 Training, 0-3 Overfeed, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 0,
+                "max": 3
+              },
+              "training": {
+                "min": 8,
+                "max": 23
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        },
+        {
+          "to": "rare",
+          "name": "Raremon",
+          "options": [
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-23 Training",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "training": {
+                "min": 0,
+                "max": 23
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 0-3 Overfeed",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "overfeed": {
+                "min": 0,
+                "max": 3
+              }
+            },
+            {
+              "other": [],
+              "raw": "4+ Care Mistakes, 3+ Sleep Disturbances",
+              "careMistakes": {
+                "min": 4,
+                "max": null
+              },
+              "sleepDisturbances": {
+                "min": 3,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 25,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/giza.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/giza.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "darktyrano": {
+      "id": "darktyrano",
+      "name": "Dark Tyrannomon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gazi"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metaltyrano",
+          "name": "Metal Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/darktyrano.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/darktyrano.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "devidra": {
+      "id": "devidra",
+      "name": "Devidramon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gazi",
+        "giza"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metaltyrano",
+          "name": "Metal Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/devidra.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/devidra.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "fly": {
+      "id": "fly",
+      "name": "Flymon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "giza"
+      ],
+      "evolvesTo": [
+        {
+          "to": "metaltyrano",
+          "name": "Metal Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 50,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/fly.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/fly.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "rare": {
+      "id": "rare",
+      "name": "Raremon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gazi",
+        "giza"
+      ],
+      "evolvesTo": [
+        {
+          "to": "extyrano",
+          "name": "Ex-Tyranomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 40,
+      "hungerLossMinutes": 28,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/rare.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/rare.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "cyclo": {
+      "id": "cyclo",
+      "name": "Cyclonemon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gazi"
+      ],
+      "evolvesTo": [
+        {
+          "to": "nano",
+          "name": "Nanomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/cyclo.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/cyclo.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "tusk": {
+      "id": "tusk",
+      "name": "Tuskmon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "gazi",
+        "giza"
+      ],
+      "evolvesTo": [
+        {
+          "to": "nano",
+          "name": "Nanomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/tusk.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/tusk.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "delta": {
+      "id": "delta",
+      "name": "Deltamon",
+      "stage": "IV",
+      "stageLabel": "Stage IV (Adult)",
+      "attribute": "Virus",
+      "from": [
+        "giza"
+      ],
+      "evolvesTo": [
+        {
+          "to": "nano",
+          "name": "Nanomon",
+          "options": [
+            {
+              "other": [],
+              "raw": "15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 45,
+      "hungerLossMinutes": 38,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/delta.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/delta.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "metaltyrano": {
+      "id": "metaltyrano",
+      "name": "MetalTyrannomon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "darktyrano",
+        "devidra",
+        "fly"
+      ],
+      "evolvesTo": [
+        {
+          "to": "mugendra",
+          "name": "Mugendramon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/metaltyrano.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/metaltyrano.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "extyrano": {
+      "id": "extyrano",
+      "name": "ExTyranomon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Vaccine",
+      "from": [
+        "rare"
+      ],
+      "evolvesTo": [
+        {
+          "to": "gaiou",
+          "name": "Gaioumon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 100,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/extyrano.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/extyrano.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "nano": {
+      "id": "nano",
+      "name": "Datamon",
+      "stage": "V",
+      "stageLabel": "Stage V (Perfect)",
+      "attribute": "Virus",
+      "from": [
+        "cyclo",
+        "tusk",
+        "delta"
+      ],
+      "evolvesTo": [
+        {
+          "to": "raiden",
+          "name": "Raidenmon",
+          "options": [
+            {
+              "other": [],
+              "raw": "0-1 Care Mistakes, 15+ Battles, 80%+ Win Ratio (See FAQ for details on lower Win Ratios)",
+              "careMistakes": {
+                "min": 0,
+                "max": 1
+              },
+              "battles": {
+                "min": 15,
+                "max": null
+              },
+              "winRatio": {
+                "min": 80,
+                "max": null
+              }
+            }
+          ]
+        }
+      ],
+      "power": 85,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/nano.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/nano.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "gaiou": {
+      "id": "gaiou",
+      "name": "Samudramon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "extyrano"
+      ],
+      "evolvesTo": [],
+      "power": 180,
+      "hungerLossMinutes": 48,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/gaiou.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/gaiou.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    },
+    "raiden": {
+      "id": "raiden",
+      "name": "Raidenmon",
+      "stage": "VI",
+      "stageLabel": "Stage VI (Ultimate)",
+      "attribute": "Virus",
+      "from": [
+        "nano"
+      ],
+      "evolvesTo": [],
+      "power": 150,
+      "hungerLossMinutes": 59,
+      "sprites": [
+        "https://humulos.com/digimon/images/dot/dmc/raiden.gif",
+        "https://humulos.com/digimon/images/dot/dmc/frame2/raiden.gif"
+      ],
+      "versions": [
+        "Ver.5"
+      ]
+    }
+  }
+}

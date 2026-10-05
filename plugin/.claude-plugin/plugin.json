@@ -1,0 +1,68 @@
+{
+  "name": "digi-pet",
+  "version": "0.1.0",
+  "description": "A Digimon V-Pet above the prompt that eats this session's prompt cache and grows from your work: it gets hungry before the cache goes cold, rests at lunch and at night, and digivolves by Digital Monster Color's rules from your turns, tests, commits and care",
+  "author": {
+    "name": "trongtaiz",
+    "email": "trongtai1112@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pet",
+    "digimon",
+    "v-pet",
+    "cache",
+    "mod"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "ttlMinutes": {
+      "type": "number",
+      "title": "Cache TTL (minutes)",
+      "description": "How long this session's prompt cache lives after a request: 60 on a 1-hour cache, 5 on the default one",
+      "default": 60
+    },
+    "restHours": {
+      "type": "string",
+      "title": "Rest hours",
+      "description": "Local windows when the pet naps: no hunger, no alerts, and a cache gone cold is no care mistake. Comma-separated HH:MM-HH:MM; a window may run past midnight",
+      "default": "12:00-14:00,18:00-08:00"
+    },
+    "dayStartsHour": {
+      "type": "number",
+      "title": "Day starts at (hour)",
+      "description": "The hour a working day begins, so a late night counts as the evening before",
+      "default": 4
+    },
+    "sidePaths": {
+      "type": "string",
+      "title": "Side-work folders",
+      "description": "Comma-separated globs (~/work/personal/**): sessions started under them are side sessions, where the pet does not get hungry. /digi side toggles it per session",
+      "default": ""
+    },
+    "minContextTokens": {
+      "type": "number",
+      "title": "Smallest cache worth minding (tokens)",
+      "description": "Below this much context the pet does not get hungry: a small cache is cheap to rebuild",
+      "default": 20000
+    },
+    "notify": {
+      "type": "boolean",
+      "title": "macOS notifications",
+      "description": "Notify when the pet is hungry or starving, so you hear about it from another app",
+      "default": true
+    },
+    "pace": {
+      "type": "string",
+      "title": "Growth pace",
+      "description": "How long every stage lasts: fast (a quarter as long), normal or slow (twice as long)",
+      "default": "normal"
+    },
+    "reducedMotion": {
+      "type": "boolean",
+      "title": "Reduced motion",
+      "description": "Draw the pet and the fight still, with no animation",
+      "default": false
+    }
+  }
+}

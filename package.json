@@ -1,0 +1,15 @@
+{
+  "name": "digi-pet",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sprites": "bun scripts/build-sprites.ts",
+    "preview": "bun scripts/preview.ts --html --shots"
+  },
+  "devDependencies": {
+    "bun-types": "^1.4.2",
+    "playwright-core": "^1.63.0",
+    "typescript": "^7.0.2"
+  },
+  "license": "MIT"
+}
