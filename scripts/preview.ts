@@ -2,10 +2,11 @@
 // waiting an hour for a hungry pet or weeks for a digivolution.
 //
 //   bun scripts/preview.ts --html [--shots]     preview/index.html (+ PNGs of each section in preview/shots)
+//   bun scripts/preview.ts --html --readme      also the README's images in docs/images (needs ffmpeg for the GIF)
 //   bun scripts/preview.ts --term [species] [state] [width]   the band and the pane as ANSI, in this terminal
 //
 // States: full peckish hungry starving cold asleep sick eating evolving
-import { mkdirSync, readdirSync } from 'node:fs'
+import { mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
@@ -163,13 +164,15 @@ function bandSection(width: number): string {
     const field = inner - block - 2
     const n = act ? 24 : frames
     const grids = Array.from({ length: n }, (_, t) => {
-      const right = band(view('agu', state, Math.floor(t / 4)), Math.floor(t / 4), block)
+      // The fight steps every frame and the pet's screen every fourth; with no fight, the screen steps every frame.
+      const st = act ? Math.floor(t / 4) : t
+      const right = band(view('agu', state, st), st, block)
       const left = act && field >= 20 ? arena(t, field, act, FIGHTS[state] ?? { open: 0, won: 3, flash: false }) : null
       // The fight stands on the band's floor, as the mod lines them up (alignItems flex-end).
       const lift = left ? right.length - left.length : 0
       return right.map((row, i) => (left ? [...(left[i - lift] ?? blank(field, 1)[0]!), ...blank(2, 1)[0]!, ...row] : [...blank(width - row.length, 1)[0]!, ...row]))
     })
-    return `<h3>${state}</h3>${terminal(`claude — my-app · ${width} cols`, anim(grids, act ? 120 : ms), width)}`
+    return `<h3>${state}</h3><div data-shot="band-${width}-${state}">${terminal(`claude — my-app · ${width} cols`, anim(grids, act ? 120 : ms), width)}</div>`
   })
   return `<section id="band-${width}"><h2>Band · ${width} columns</h2>${cards.join('')}</section>`
 }
@@ -187,7 +190,7 @@ function paneSection(width: number): string {
   const states: State[] = ['full', 'hungry', 'asleep']
   const cards = states.map(state => {
     const grids = Array.from({ length: 24 }, (_, t) => pane(view('agu', state, t), t, width))
-    return `<h3>${state}</h3>${terminal(`/digi pane · ${width} cols`, anim(grids, 400), width)}`
+    return `<h3>${state}</h3><div data-shot="pane-${width}-${state}">${terminal(`/digi pane · ${width} cols`, anim(grids, 400), width)}</div>`
   })
   return `<section id="pane-${width}"><h2>Pane · ${width} columns</h2>${cards.join('')}</section>`
 }
@@ -223,6 +226,13 @@ function posesSection(): string {
     return `<div class="poserow"><b>${esc(s.name)}</b>${sheet}${stills.join('')}</div>`
   })
   return `<section id="poses"><h2>Poses from the full sheets: the Ver.1 line</h2>${rows.join('')}</section>`
+}
+
+/** One Ver.1 line, egg to Mega, each on its own screen: the README's lineup. */
+function lineupSection(): string {
+  const ids: SpeciesId[] = ['egg1', 'bota', 'koro', 'agu', 'grey', 'metalgrey_vi', 'blitzgrey']
+  const cards = ids.map(id => `<div class="still"><small>${esc(SPRITES[id].name)}</small>${gridHtml(lcd(view(id, 'full'), 0, 20))}</div>`)
+  return `<section id="lineup"><h2>A Ver.1 line, egg to Mega</h2><div class="cards">${cards.join('')}</div></section>`
 }
 
 function filmstrip(): string {
@@ -333,7 +343,7 @@ const SCRIPT = `
 function html(): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>digi-pet preview</title><style>${CSS}</style></head><body>
   <h1>digi-pet preview</h1><div class="dim">Every grid here is the one the mod draws (hooks/render.ts). Regenerate with <code>bun run preview</code>.</div>
-  ${chartSection()}${posesSection()}${spriteSection()}${filmstrip()}${miniSection()}${bandSection(80)}${bandSection(120)}${bandSection(160)}${paneSection(80)}${paneSection(144)}${alertSection()}
+  ${chartSection()}${lineupSection()}${posesSection()}${spriteSection()}${filmstrip()}${miniSection()}${bandSection(80)}${bandSection(120)}${bandSection(160)}${paneSection(80)}${paneSection(144)}${alertSection()}
   <script>${SCRIPT}</script></body></html>`
 }
 
@@ -366,6 +376,67 @@ async function shots(path: string) {
   await browser.close()
 }
 
+/** The README's images: a still at `frame` (PNG) or the whole loop (GIF), of a card or a section. */
+const README_SHOTS: { file: string; at: string; frame?: number }[] = [
+  { file: 'fight.gif', at: '[data-shot="band-120-tool"]' },
+  { file: 'battle-red.png', at: '[data-shot="band-120-red"]', frame: 2 },
+  { file: 'battle-win.png', at: '[data-shot="band-120-win"]', frame: 1 },
+  { file: 'hungry.png', at: '[data-shot="band-120-hungry"]', frame: 0 },
+  { file: 'evolving.gif', at: '[data-shot="band-120-evolving"]' },
+  { file: 'pane.png', at: '[data-shot="pane-144-full"]', frame: 0 },
+  { file: 'lineup.png', at: '#lineup .cards' },
+]
+
+async function readmeShots(path: string) {
+  const { chromium } = await import('playwright-core')
+  const dir = join(ROOT, 'docs/images')
+  const tmp = join(OUT, 'frames')
+  mkdirSync(dir, { recursive: true })
+  const browser = await chromium.launch({ executablePath: findChromium() })
+  const page = await browser.newPage({ viewport: { width: 1800, height: 1000 }, deviceScaleFactor: 1 })
+  // Every loop stopped on frame `i` (its last, when it has fewer).
+  const showFrame = (i: number) =>
+    page.evaluate(i => {
+      for (const a of document.querySelectorAll<HTMLElement>('.anim')) {
+        const frames = [...a.children] as HTMLElement[]
+        frames.forEach((f, j) => (f.hidden = j !== Math.min(frames.length - 1, i)))
+      }
+    }, i)
+  for (const shot of README_SHOTS) {
+    // The card alone on the page, so nothing around it moves while its frames change.
+    await page.goto(`file://${path}`)
+    await page.evaluate(at => {
+      const card = document.querySelector(at)!
+      document.body.replaceChildren(card)
+      document.body.style.padding = '0'
+      ;(card as HTMLElement).style.width = 'max-content'
+      // The page's own loops would step the frames under the camera.
+      for (let id = 0; id < 10_000; id++) clearInterval(id)
+    }, shot.at)
+    const el = page.locator('body > *').first()
+    if (!shot.file.endsWith('.gif')) {
+      await showFrame(shot.frame ?? 0)
+      await el.screenshot({ path: join(dir, shot.file) })
+    } else {
+      const { n, ms } = await el.evaluate(e => {
+        const a = e.querySelector<HTMLElement>('.anim')!
+        return { n: a.children.length, ms: Number(a.dataset.ms) }
+      })
+      rmSync(tmp, { recursive: true, force: true })
+      mkdirSync(tmp, { recursive: true })
+      for (let i = 0; i < n; i++) {
+        await showFrame(i)
+        await el.screenshot({ path: join(tmp, `${String(i).padStart(3, '0')}.png`) })
+      }
+      const ff = Bun.spawnSync(['ffmpeg', '-loglevel', 'error', '-y', '-framerate', String(1000 / ms), '-i', join(tmp, '%03d.png'), '-vf', 'split[a][b];[a]palettegen=reserve_transparent=0[p];[b][p]paletteuse=dither=none', '-loop', '0', join(dir, shot.file)])
+      if (ff.exitCode !== 0) throw new Error(`ffmpeg: ${ff.stderr.toString()}`)
+      rmSync(tmp, { recursive: true, force: true })
+    }
+    console.log(`docs/images/${shot.file}`)
+  }
+  await browser.close()
+}
+
 const args = process.argv.slice(2)
 if (args[0] === '--term') {
   const [, id = 'agu', state, width] = args
@@ -378,6 +449,7 @@ if (args[0] === '--term') {
   await Bun.write(path, html())
   console.log(`wrote ${path}`)
   if (args.includes('--shots')) await shots(path)
+  if (args.includes('--readme')) await readmeShots(path)
 } else {
   console.log('usage: bun scripts/preview.ts --html [--shots] | --term [species] [state] [width]')
 }

@@ -5,6 +5,10 @@ prompt cache, fights while Claude works, and digivolves by the Digital Monster
 Color's rules from what you actually do: turns, tests, commits and how well you
 look after it.
 
+![The band during a turn: monsters run in and Agumon shoots them down from its Digivice](docs/images/fight.gif)
+
+![A Ver.1 line from egg to Mega: Digitama, Botamon, Koromon, Agumon, Greymon, MetalGreymon, BlitzGreymon](docs/images/lineup.png)
+
 ## Install
 
 ```
@@ -38,6 +42,8 @@ screen, then a half-size one, then a single line. `/digi pane` opens a side
 pane with the full picture: the Digivice, its six stats as bars and its
 evolution so far.
 
+![The /digi pane: Agumon in its Digivice with hunger, care mistakes, battles, trophies, progress to Champion, six stat bars and its evolution so far](docs/images/pane.png)
+
 ### Hunger is the prompt cache
 
 Claude Code caches the conversation for a while after each request (60 minutes
@@ -66,6 +72,8 @@ get hungry when the cache is not worth keeping warm:
 It also does not warn you about a cache that will expire during rest hours
 anyway: feeding it then would only move the expiry into the break.
 
+![A hungry pet: the Digivice turns orange and Agumon says the cache goes cold in 12 minutes](docs/images/hungry.png)
+
 ### Care mistakes
 
 A cache that goes cold, and is then picked up again **the same day**, is a care
@@ -92,6 +100,10 @@ and the like).
   **win**.
 - If the turn ends with it still red, it is a **loss**.
 - An interrupted turn is neither.
+
+| A check is red | It goes green in the same turn |
+|---|---|
+| ![A red boss with "1 check red" while npm test fails](docs/images/battle-red.png) | ![The boss blows up with WIN! and the score goes to 4](docs/images/battle-win.png) |
 
 Failures are read from the check's output as well as its exit code, since most
 runs are piped through `tail`. Wins this stage show top right. The win ratio
@@ -150,6 +162,8 @@ Two house rules sit on top of the chart:
 `/digi` shows the counts and what the next stage still needs. `/digi log`
 lists every digivolution so far.
 
+![Agumon digivolving: it flashes to a silhouette, then Greymon appears with sparkles](docs/images/evolving.gif)
+
 ### Jogress and eggs
 
 A Mega with 15 battles this stage and an 80% win ratio can fuse with the
@@ -193,6 +207,7 @@ bun install
 claude plugin test plugin       # tests
 claude plugin validate plugin
 bun run preview                 # preview/index.html: every state, rendered
+bun scripts/preview.ts --html --readme   # redraw the images in docs/images
 ```
 
 To run your working copy, add the folder as a marketplace:
