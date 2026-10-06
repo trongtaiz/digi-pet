@@ -7,8 +7,8 @@
 import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, Register, RenderElement } from 'claude-code'
 
-import type { DigiActivity, DigiBattle, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
-import { busyLabel, toolLabel } from './activity'
+import type { DigiActivity, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
+import { busyLabel, toolLabel, toolRun } from './activity'
 import { segments } from './cells'
 import type { Grid } from './cells'
 import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
@@ -31,8 +31,9 @@ import {
 import type { Config, Quiet } from './hunger'
 import { byDay, totals, writer } from './ledger'
 import type { Counters, Ledger } from './ledger'
-import { BAND_WIDTH, MINI_BAND_ROWS, band, isLoud, miniBand, notification, statusLine, toast } from './render'
+import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, band, isLoud, miniBand, notification, statusLine, toast } from './render'
 import type { Attribute, Hunger } from './render'
+import type { RunProps } from './run'
 import type { ScreenProps } from './screen'
 import { isRisky, isTrophy, signalOf } from './signals'
 import { SPECIES } from './species.gen'
@@ -108,6 +109,8 @@ type Ctx = {
   shownStatus: string | undefined
   /** The main loop's tool calls running now, by id, with their labels. */
   running: Map<string, string>
+  /** The same calls, with what each runs, for the row under the pet. */
+  runs: Map<string, DigiRun>
   /** Whether the running turn has used a tool: a turn of training. */
   isTraining: boolean
   /** The checks gone red this turn and not green again: battles still being fought. */
@@ -141,6 +144,7 @@ function contextOf(options: Readonly<Record<string, unknown>>): Ctx {
     warned: { fedAt: -1, levels: new Set() },
     shownStatus: undefined,
     running: new Map(),
+    runs: new Map(),
     isTraining: false,
     red: new Set(),
     isOverfull: false,
@@ -289,7 +293,8 @@ async function actOf($: EngineInterface): Promise<Pick<ViewJson, 'act' | 'tool'>
 
 async function settle($: EngineInterface, ctx: Ctx) {
   const tool = busyLabel([...ctx.running.values()])
-  await update($, activity, (a): DigiActivity => (a.act === 'idle' ? a : tool ? { act: 'tool', tool } : { act: 'think' }))
+  const run = [...ctx.runs.values()].pop()
+  await update($, activity, (a): DigiActivity => (a.act === 'idle' ? a : tool ? { act: 'tool', tool, ...(run ? { run } : {}) } : { act: 'think' }))
 }
 
 /** `{ [key]: text }`, or nothing when there is no text: a Client's props hold no undefined. */
@@ -568,6 +573,7 @@ export const register: Register = (on, options) => {
 
   on('turn.start', async ($, e, next) => {
     ctx.running.clear()
+    ctx.runs.clear()
     ctx.isTraining = false
     ctx.red.clear()
     await update($, battle, b => (b.open || b.flash ? { ...b, open: 0, flash: false } : b))
@@ -579,12 +585,16 @@ export const register: Register = (on, options) => {
     if (e.agentId) return trained($, ctx, e, await next(e))
     ctx.isTraining = true
     if ((await read($, battle)).flash) await update($, battle, b => ({ ...b, flash: false }))
-    ctx.running.set(e.tool_use_id, toolLabel(e as unknown as { tool: string } & Record<string, unknown>))
-    await update($, activity, () => (e.tool === 'AskUserQuestion' ? { act: 'ask' } : { act: 'tool', tool: busyLabel([...ctx.running.values()]) }) as DigiActivity)
+    const input = e as unknown as { tool: string } & Record<string, unknown>
+    ctx.running.set(e.tool_use_id, toolLabel(input))
+    const run = { id: e.tool_use_id, ...toolRun(input) }
+    ctx.runs.set(e.tool_use_id, run)
+    await update($, activity, () => (e.tool === 'AskUserQuestion' ? { act: 'ask' } : { act: 'tool', tool: busyLabel([...ctx.running.values()]), run }) as DigiActivity)
     try {
       return await trained($, ctx, e, await next(e))
     } finally {
       ctx.running.delete(e.tool_use_id)
+      ctx.runs.delete(e.tool_use_id)
       await settle($, ctx)
     }
   })
@@ -593,6 +603,7 @@ export const register: Register = (on, options) => {
     const result = await next(e)
     if (e.agentId) return result
     ctx.running.clear()
+    ctx.runs.clear()
     await update($, activity, () => ({ act: 'idle' }) as DigiActivity)
     const t = await $.clock.now()
     // A check still red when the turn ends is a battle lost; an interrupted turn fought none to the end, and is a risky move.
@@ -741,11 +752,14 @@ export const register: Register = (on, options) => {
       const isFighting = v.act !== undefined && !(isLoud(pv) && room >= LOUD_ROWS)
       const fight = await read($, battle)
       const block = Math.min(width, isFighting ? WORK_BLOCK : BAND_WIDTH)
-      const props: ScreenProps = { kind: 'band', width: block, maxRows: room, view: v, isStill: ctx.isStill }
+      // With a row to spare under the Digivice, what the tool runs goes there and the bubble is the pet's own.
+      const run = isFighting && v.act === 'tool' && room > DEVICE_ROWS ? (await read($, activity)).run : undefined
+      const shown = run ? { ...v, tool: 'Fighting!' } : v
+      const props: ScreenProps = { kind: 'band', width: block, maxRows: run ? room - 1 : room, view: shown, isStill: ctx.isStill }
       const shape = isLoud(pv) && room >= LOUD_ROWS ? 'loud' : (v.act ?? 'idle')
       const screen = <Client key={`band-${v.species}-${shape}`} module="./screen.tsx" width={block} props={props} />
       const field = width - block - 2
-      mine =
+      const top =
         isFighting && field >= MIN_ARENA ? (
           <Box flexDirection="row" columnGap={2} alignItems="flex-end">
             <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, isStill: ctx.isStill }} />
@@ -754,6 +768,15 @@ export const register: Register = (on, options) => {
         ) : (
           screen
         )
+      const runProps: RunProps | undefined = run && { width, tool: run.tool, text: run.text, isStill: ctx.isStill }
+      mine = runProps ? (
+        <Box flexDirection="column" alignItems="flex-end">
+          {top}
+          <Client key={`run-${run!.id}`} module="./run.tsx" width={width} props={runProps} />
+        </Box>
+      ) : (
+        top
+      )
     } else if (room >= MINI_BAND_ROWS && width >= 40) {
       mine = drawn(ui, miniBand(pv, 0, Math.min(width, BAND_WIDTH)))
     } else {

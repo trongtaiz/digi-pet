@@ -286,19 +286,28 @@ test('the pet is on its screen at all times: at work during a turn, idling betwe
   expect(JSON.stringify(await ui.drawn({ in: 'band-bota-think' }))).toContain('Thinking')
   await ui.unmount()
 
-  // A tool running: its label in the bubble, two lanes of monsters.
-  const call = $.tool.call({ tool: 'Bash', command: 'npm test', description: 'run tests' } as never)
+  // A tool running: what it runs on a row of its own under the pet, the pet's own words in the bubble, two lanes of monsters.
+  const call = $.tool.call({ tool: 'Bash', command: 'npm test -- --run src/session', description: 'run tests' } as never)
   await clock.advance(10)
   ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...WORKING })
   screens = (await ui.findAll({ type: 'Client' })) as { key?: string }[]
-  expect(JSON.stringify(await ui.drawn({ in: petScreen(screens).key! }))).toContain('Bash: npm test')
+  expect(JSON.stringify(await ui.drawn({ in: petScreen(screens).key! }))).toContain('Fighting!')
   expect(screens.some(c => c.key === 'arena-tool-0')).toBe(true)
+  const run = screens.find(c => c.key?.startsWith('run-'))!
+  expect(JSON.stringify(await ui.drawn({ in: run.key! }))).toContain('npm test -- --run src/session')
   await ui.unmount()
 
-  // Too narrow for a fight worth seeing: the pet alone.
+  // Nine rows: no room for the row under the Digivice, so the bubble says it, as before.
+  ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...WORKING, props: { ...WORKING.props, maxRows: 9 } })
+  screens = (await ui.findAll({ type: 'Client' })) as { key?: string }[]
+  expect(screens.some(c => c.key?.startsWith('run-'))).toBe(false)
+  expect(JSON.stringify(await ui.drawn({ in: petScreen(screens).key! }))).toContain('Bash: npm test')
+  await ui.unmount()
+
+  // Too narrow for a fight worth seeing: the pet alone, what it runs still under it.
   ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...WORKING, props: { ...WORKING.props, bodyColumns: 70 } })
   screens = (await ui.findAll({ type: 'Client' })) as { key?: string }[]
-  expect(screens.map(c => c.key)).toEqual(['band-bota-tool'])
+  expect(screens.map(c => c.key?.replace(/^run-.*/, 'run'))).toEqual(['band-bota-tool', 'run'])
   await ui.unmount()
   await clock.advance(1000)
   await call

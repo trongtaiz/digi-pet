@@ -15,7 +15,10 @@ export type DigiSim = { species: string; state: string; to: string | null }
 export type DigiMood = { kind: 'normal' | 'eating' | 'sick' | 'happy'; turnsLeft: number }
 
 /** What the running turn is doing; `idle` between turns. */
-export type DigiActivity = { act: 'idle' | 'think' | 'tool' | 'say' | 'ask'; tool?: string }
+export type DigiActivity = { act: 'idle' | 'think' | 'tool' | 'say' | 'ask'; tool?: string; run?: DigiRun }
+
+/** The latest main-loop tool call running, for the row under the pet: its id, the tool, and what it runs. */
+export type DigiRun = { id: string; tool: string; text: string }
 
 /** Local facts the drawing needs: the clock's offset from UTC and the project's name. */
 export type DigiLocal = { offsetMin: number; project: string; ttlMs: number }

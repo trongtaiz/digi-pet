@@ -611,6 +611,22 @@ export function miniBand(v: PetView, t: number, width: number): Grid {
 
 export const MINI_BAND_ROWS = MINI_ROWS
 
+/** The tool running, on a row of its own under the pet, ending two columns in from its right edge: `⏵ Bash  npm test  12s`. Its command is cut first; no time when `secs` is absent. */
+export function toolRow(run: { tool: string; text: string }, width: number, secs?: number): Grid {
+  const g = blank(width, 1)
+  const time = secs === undefined ? '' : `  ${secs}s`
+  const room = width - 2 - textWidth(`⏵ ${run.tool}  `) - textWidth(time)
+  const chars = [...run.text]
+  const text = textWidth(run.text) <= room ? run.text : room > 1 ? `${chars.slice(0, room - 1).join('')}…` : ''
+  putRight(g, width - 2, 0, [
+    ['⏵ ', { c: '#e5c07b' }],
+    [run.tool, { c: '#e5c07b', b: true }],
+    [text ? `  ${text}` : '', { c: TEXT }],
+    [time, { c: DIM }],
+  ])
+  return g
+}
+
 // ---- the arena -------------------------------------------------------------
 
 const ENEMIES: { art: string[]; colors: Record<string, string>; flies: boolean }[] = [

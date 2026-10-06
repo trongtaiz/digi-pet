@@ -1,6 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
-import { HUNGER_COLOR, arena, band, digivice, pane } from '../hooks/render'
+import { HUNGER_COLOR, arena, band, digivice, pane, toolRow } from '../hooks/render'
+import { toolRun } from '../hooks/activity'
 import type { PaneView } from '../hooks/render'
 import { SPRITES } from '../hooks/sprites.gen'
 
@@ -78,4 +79,25 @@ test("the band shows the Digivice when it has nine rows, the bare screen with ei
   const hungry = band({ ...view, hunger: 'hungry', minutesLeft: 12 }, 0, 100, 12)
   expect(hungry).toHaveLength(9)
   expect(JSON.stringify(hungry)).toContain(HUNGER_COLOR.hungry)
+})
+
+test('the tool row under the pet: tool, what it runs and its time, ending at the right edge; a long command is cut first', () => {
+  const row = (run: { tool: string; text: string }, width: number, secs?: number) => toolRow(run, width, secs)[0]!.map(c => c.ch).join('')
+  const short = row({ tool: 'Bash', text: 'npm test -- --run' }, 60, 12)
+  expect(short.trimEnd()).toMatch(/⏵ Bash {2}npm test -- --run {2}12s$/)
+  expect(short.trimEnd().length).toBeLessThanOrEqual(58)
+  const long = row({ tool: 'Bash', text: 'git commit -m "session store: one write path, and a test for the two-tab race"' }, 50, 2)
+  expect(long).toContain('⏵ Bash')
+  expect(long).toContain('…')
+  expect(long.trimEnd()).toMatch(/2s$/)
+  // No time with reduced motion.
+  expect(row({ tool: 'Read', text: 'src/a.ts' }, 40).trimEnd()).toMatch(/Read {2}src\/a\.ts$/)
+})
+
+test('what a tool runs, cleaned for one row: the first line, no control characters, runs of space collapsed', () => {
+  expect(toolRun({ tool: 'Bash', command: 'cat <<EOF > a\nhello\nEOF' })).toEqual({ tool: 'Bash', text: 'cat <<EOF > a' })
+  expect(toolRun({ tool: 'Bash', command: "printf '\x1b[31m'\t  red\r" })).toEqual({ tool: 'Bash', text: "printf '[31m' red" })
+  expect(toolRun({ tool: 'Read', file_path: '/Users/me/app/src/a.ts' })).toEqual({ tool: 'Read', text: '/Users/me/app/src/a.ts' })
+  expect(toolRun({ tool: 'Agent', subagent_type: 'Explore', description: 'find callers' })).toEqual({ tool: 'Agent', text: 'Explore · find callers' })
+  expect(toolRun({ tool: 'mcp__github__search', query: 'x' })).toEqual({ tool: 'search', text: 'x' })
 })
