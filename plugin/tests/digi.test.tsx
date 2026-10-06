@@ -510,6 +510,8 @@ test('trophies need proof, summons count, risky moves and interrupts are chaos, 
       [{ tool: 'Bash', command: 'git commit -m "x"' }, '[main 1a2b3c4] x'],
       [{ tool: 'Bash', command: 'git commit -m "y"' }, 'nothing to commit, working tree clean'],
       [{ tool: 'Bash', command: 'gh pr create --fill' }, 'https://github.com/me/app/pull/7'],
+      [{ tool: 'Bash', command: 'git -C /Users/me/app commit -m "z" && glab mr create --fill --yes' }, '[feat/z 5e6f7a8] z\n https://gitlab.com/me/app/-/merge_requests/12'],
+      [{ tool: 'mcp__gitlab__create_merge_request', title: 'z' }, '{"iid":13}'],
       [{ tool: 'Agent', prompt: 'look around', description: 'look' }, 'found it'],
       [{ tool: 'Bash', command: 'git push --force' }, ''],
       [{ tool: 'Bash', command: 'rm -rf /tmp/scratch' }, ''],
@@ -518,10 +520,10 @@ test('trophies need proof, summons count, risky moves and interrupts are chaos, 
     30_000,
   )
   await toolTurn($, clock, [[{ tool: 'Read', file_path: '/a' }, 'x']], 'aborted')
-  expect([today().trophies, today().summons, today().chaos, today().quickTurns, today().research]).toEqual([2, 1, 2, 1, 1])
+  expect([today().trophies, today().summons, today().chaos, today().quickTurns, today().research]).toEqual([5, 1, 2, 1, 1])
   const stats = (await $.command.run({ ...RUN, command: 'digi', args: 'stats' })).text!
-  expect(stats).toContain('2 chaos · 2 trophies · 1 summons')
-  expect(stats).toContain('2 trophies ever')
+  expect(stats).toContain('2 chaos · 5 trophies · 1 summons')
+  expect(stats).toContain('5 trophies ever')
 })
 
 test('/digi pet makes it happy and counts for SYN; /digi log lists its forms; /digi jogress waits for a Mega', async ($, on) => {

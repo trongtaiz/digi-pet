@@ -157,6 +157,10 @@ pace; an active day is one with at least five turns):
 | Mega | 14 active days, then a jogress |
 
 A **trophy** is a commit or an opened pull request; a **summon** is a subagent.
+Pull requests count on any forge whose CLI or MCP server opens them: GitHub
+(`gh`), GitLab (`glab`, or `git push -o merge_request.create`), Gitea and
+Forgejo (`tea`, `fj`), Azure DevOps (`az repos pr create`) and Gerrit (a push
+to `refs/for/`).
 `pace` makes every stage last a quarter as long (`fast`) or twice as long
 (`slow`).
 
