@@ -704,3 +704,19 @@ test('an ally whose stop was missed leaves on the next tick, once its subagent i
   await clock.advance(3000)
   expect(await field()).not.toContain('plan the m')
 })
+
+test('a subagent\'s description reaches the field with no control characters', async ($, on) => {
+  host(on, at('09:00'))
+  stepWith(on, () => HIT)
+  on('agent.list', () => ({ value: [{ id: 'a1', description: '\x1b]8;;https://x\x07go\u009b2J', type: 'Explore', status: 'running' }] as never }))
+  on('classic.SubagentStart', () => ({}))
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' } as never)
+  await $.classic.SubagentStart({ agent_id: 'a1', agent_type: '\x1bExplore' } as never)
+  const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...BAND, props: { ...BAND.props, isWorking: true } })
+  const arenaKey = ((await ui.findAll({ type: 'Client' })) as { key?: string }[]).find(c => c.key?.startsWith('arena-'))!.key!
+  const drawn = JSON.stringify(await ui.drawn({ in: arenaKey }))
+  await ui.unmount()
+  expect(drawn).toContain(']8;;https:')
+  expect(/\\u001b|\\u0007|\\u009b|[\u001b\u0007\u009b]/.test(drawn)).toBe(false)
+})

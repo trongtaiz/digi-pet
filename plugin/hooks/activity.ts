@@ -3,9 +3,17 @@
 // https://github.com/hoobnn/hoobnn-agent-mods, MIT © 2026 hoobnn).
 import { textWidth } from './cells'
 
+/** Text from a tool call or a subagent as one clean line: the first line, tabs as spaces, control characters (C0, DEL, C1) out, runs of space as one. */
+export function oneLine(text: string): string {
+  return text.split('\n')[0]!.replace(/\t/g, ' ').replace(/[\u0000-\u001f\u007f-\u009f]/g, '').replace(/\s+/g, ' ').trim()
+}
+
 /** What a tool call is about, short: `Bash: npm test`, `Edit: render.ts`, `WebSearch`. */
 export function toolLabel(e: { tool: string } & Record<string, unknown>): string {
-  const clip = (s: string) => (textWidth(s) > 32 ? `${Array.from(s).slice(0, 31).join('')}…` : s)
+  const clip = (raw: string) => {
+    const s = oneLine(raw)
+    return textWidth(s) > 32 ? `${Array.from(s).slice(0, 31).join('')}…` : s
+  }
   if (typeof e.command === 'string') return clip(`${e.tool}: ${e.command.split('\n')[0]!.trim()}`)
   const path = [e.file_path, e.notebook_path, e.path].find(p => typeof p === 'string') as string | undefined
   if (path) return clip(`${e.tool}: ${path.split('/').pop()}`)
@@ -27,8 +35,7 @@ export function toolRun(e: { tool: string } & Record<string, unknown>): { tool: 
   const task = [str(e.subagent_type), str(e.description)?.trim()].filter(Boolean).join(' · ')
   const text = str(e.command) ?? str(e.file_path) ?? str(e.notebook_path) ?? str(e.url) ?? str(e.query) ?? str(e.pattern) ?? (task || str(e.path)) ?? ''
   // One line, no escapes or tabs to break the row: the first line, control characters out, runs of space as one.
-  const line = text.split('\n')[0]!.replace(/\t/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim()
-  return { tool, text: line }
+  return { tool: oneLine(tool), text: oneLine(text) }
 }
 
 /** Which Baby II stands in for a subagent, by its type: the same one every time, so you learn them. */

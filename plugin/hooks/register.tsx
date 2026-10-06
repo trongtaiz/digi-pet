@@ -8,7 +8,7 @@ import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, Register, RenderElement } from 'claude-code'
 
 import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
-import { allyOf, busyLabel, toolLabel, toolRun } from './activity'
+import { allyOf, busyLabel, oneLine, toolLabel, toolRun } from './activity'
 import { segments } from './cells'
 import type { Grid } from './cells'
 import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
@@ -575,7 +575,8 @@ export const register: Register = (on, options) => {
   // A subagent is an ally on the field while it runs: in when it starts, out (done or failed) when it stops.
   on('classic.SubagentStart', async ($, e, next) => {
     const info = (await agents($))?.find(a => a.id === e.agent_id)
-    const ally: DigiAlly = { id: e.agent_id, type: e.agent_type, label: info?.description.trim() || e.agent_type, species: allyOf(e.agent_type) }
+    const type = oneLine(e.agent_type)
+    const ally: DigiAlly = { id: e.agent_id, type, label: oneLine(info?.description ?? '') || type, species: allyOf(type) }
     await update($, allies, list => (list.some(a => a.id === ally.id) ? list : [...list, ally]))
     return next(e)
   })

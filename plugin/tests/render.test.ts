@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { HUNGER_COLOR, arena, band, digivice, pane, toolRow } from '../hooks/render'
-import { toolRun } from '../hooks/activity'
+import { oneLine, toolLabel, toolRun } from '../hooks/activity'
 import type { PaneView } from '../hooks/render'
 import { SPRITES } from '../hooks/sprites.gen'
 
@@ -125,4 +125,12 @@ test('between turns a subagent still out waits on the pet\'s screen, and the pet
   expect(words).toContain('Tokomon is still out: exploring')
   // No allies: the same band as before.
   expect(band({ ...view, allies: [] }, 0, 72)).toEqual(band(view, 0, 72))
+})
+
+test('text from a tool call or a subagent reaches the band with no control characters, C1 ones included', () => {
+  const evil = 'a\x1b]8;;https://x\x07b\u009b2Jc\td'
+  expect(oneLine(evil)).toBe('a]8;;https://xb2Jc d')
+  expect(toolRun({ tool: 'Bash', command: evil }).text).toBe('a]8;;https://xb2Jc d')
+  expect(toolLabel({ tool: 'Bash', command: evil })).toBe('Bash: a]8;;https://xb2Jc d')
+  expect(toolLabel({ tool: 'Grep', pattern: '\x1b[31mred' })).toBe('Grep: [31mred')
 })
