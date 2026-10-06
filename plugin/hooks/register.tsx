@@ -58,7 +58,7 @@ const OVERFULL_PERCENT = 85
 const REFED_PERCENT = 70
 const STATES = ['full', 'peckish', 'hungry', 'starving', 'cold', 'asleep', 'sick', 'eating', 'evolving'] as const
 
-const EMPTY: DigiFeeding = { lastFedAt: null, isSide: false, isAsleep: false, breakUntil: null, contextTokens: null }
+const EMPTY: DigiFeeding = { lastFedAt: null, isSide: false, isAsleep: false, breakUntil: null, awakeUntil: null, contextTokens: null }
 
 const feeding = atom({ plugin: 'digi-pet', key: 'feeding' } as const, EMPTY)
 const now = atom({ plugin: 'digi-pet', key: 'now' } as const, 0)
@@ -74,7 +74,7 @@ const growth = atom({ plugin: 'digi-pet', key: 'growth' } as const, null as Digi
 const evolving = atom({ plugin: 'digi-pet', key: 'evolving' } as const, null as DigiEvolving | null)
 const battle = atom({ plugin: 'digi-pet', key: 'battle' } as const, { open: 0, won: 0, flash: false } as DigiBattle)
 
-const USAGE = '[stats | pane | log | pet | jogress | sleep | break 90m|until 15:30|off | side [off] | sim <species> [state] [to] | sim off | debug ttl <min>|off]'
+const USAGE = '[stats | pane | log | pet | jogress | sleep | wake | break 90m|until 15:30|off | side [off] | sim <species> [state] [to] | sim off | debug ttl <min>|off]'
 
 /** Whether the prompt's draft has a `/` or `@` picker open, which the engine draws above the band. */
 function isPickerOpen(text: string, cursor = text.length): boolean {
@@ -655,6 +655,15 @@ export const register: Register = (on, options) => {
       case 'sleep':
         await update($, feeding, f => ({ ...f, isAsleep: true }))
         return { text: 'The pet sleeps until your next prompt: no hunger, no alerts.' }
+      case 'wake': {
+        // Read the clock and the pet afresh first: a conversation that lost them sleeps by UTC.
+        await begin($, ctx, await $.session.cwd())
+        const fresh = await configOf($, ctx)
+        const end = restEnd(t, fresh)
+        await update($, feeding, f => ({ ...f, isAsleep: false, breakUntil: null, awakeUntil: end }))
+        const name = spriteOf(await read($, species)).name
+        return { text: end ? `${name} is awake until ${clockText(end, fresh.offsetMin)}, when this rest window ends: hunger and alerts are on.` : `${name} is awake.` }
+      }
       case 'break': {
         if (arg === 'off') {
           await update($, feeding, f => ({ ...f, breakUntil: null }))

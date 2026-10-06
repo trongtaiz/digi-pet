@@ -4,6 +4,7 @@ export type DigiFeeding = {
   isSide: boolean
   isAsleep: boolean
   breakUntil: number | null
+  awakeUntil: number | null
   contextTokens: number | null
 }
 

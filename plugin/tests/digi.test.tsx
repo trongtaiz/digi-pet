@@ -46,6 +46,7 @@ function host(on: On, now: number, stored: Record<string, unknown> = {}) {
   on('store.keys', () => ({ value: [...kept.keys()] }))
   mock.env(on, { HOME: '/Users/me' })
   on('session.id', () => ({ value: sessionId }))
+  on('session.cwd', () => ({ value: START.cwd }))
   on('command.register', ($, e) => ({ value: { command: e.name } }))
   on('process.run', ($, e) => {
     if (e.argv[0] === 'osascript') notes.push([...e.argv])
@@ -608,4 +609,29 @@ test('after /clear the pet is itself at once, and a side session stays one', asy
   expect(((await ui.findAll({ type: 'Client' })) as { key?: string }[])[0]!.key).toBe('band-koro-idle')
   await ui.unmount()
   expect((await $.command.run({ ...RUN, command: 'digi', args: '' })).text).toContain('side session: yes')
+})
+
+test('/digi wake gets the pet up: through the rest window it is in, and out of /digi sleep', async ($, on) => {
+  const clock = host(on, at('12:20'))
+  stepWith(on, () => HIT)
+  await start($)
+  await turn($)
+  const band = async () => {
+    const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...BAND })
+    const drawn = JSON.stringify(await ui.drawn({ in: petScreen(await ui.findAll({ type: 'Client' })).key! }))
+    await ui.unmount()
+    return drawn
+  }
+  expect(await band()).toContain('resting until 14:00')
+
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'wake' })).text).toContain('awake until 14:00')
+  expect(await band()).not.toContain('resting')
+  // Awake, it minds the cache as in working hours: hungry 45 minutes after the meal.
+  await clock.advance(46 * MIN)
+  expect(toasts.some(t => t.includes('Botamon is hungry'))).toBe(true)
+
+  await $.command.run({ ...RUN, command: 'digi', args: 'sleep' })
+  expect(await band()).toContain('asleep until your next prompt')
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'wake' })).text).toContain('awake')
+  expect(await band()).not.toContain('asleep')
 })

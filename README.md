@@ -62,7 +62,8 @@ is that clock:
 Any prompt feeds it. The thresholds scale with `ttlMinutes`. The pet does not
 get hungry when the cache is not worth keeping warm:
 
-- in **rest hours** (`restHours`, lunch and evenings by default);
+- in **rest hours** (`restHours`, lunch and evenings by default), unless you
+  `/digi wake` it, which keeps it up until that window ends;
 - on a **break** (`/digi break 90m`, `/digi break until 15:30`) or after
   `/digi sleep`, until your next prompt;
 - in a **side session** (`/digi side`, or a folder listed in `sidePaths`);
@@ -180,6 +181,7 @@ five DMC version eggs at random, and each egg leads to a different chart.
 | `/digi pet` | Pat it (the first three a day raise SYN) |
 | `/digi jogress` | Fuse with a partner, where the chart allows |
 | `/digi sleep` | Sleep until your next prompt |
+| `/digi wake` | Wake it: ends a sleep or a break, and keeps it up through the rest window it is in |
 | `/digi break 90m` / `until 15:30` / `off` | A one-off rest window |
 | `/digi side [off]` | Mark this session as side work: no hunger |
 | `/digi sim <species> [state]` / `sim off` | Preview any species and state |

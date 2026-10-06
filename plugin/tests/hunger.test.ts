@@ -27,6 +27,7 @@ const FED = (hm: string, more: Partial<Feeding> = {}): Feeding => ({
   isSide: false,
   isAsleep: false,
   breakUntil: null,
+  awakeUntil: null,
   contextTokens: 100_000,
   ...more,
 })
@@ -75,6 +76,14 @@ test('it yells while feeding can still save the cache, and only then', () => {
   expect(warningOf({ ...FED('09:00'), lastFedAt: null }, at('09:50'), CFG)).toBe(null)
   expect(quietOf(FED('09:00'), at('12:30'), CFG)).toBe('rest')
   expect(quietOf(FED('09:00', { breakUntil: at('10:30') }), at('09:50'), CFG)).toBe('break')
+})
+
+test('/digi wake keeps the pet up through the rest window it woke in, and warns as in working hours', () => {
+  const awake = FED('12:10', { awakeUntil: at('14:00') })
+  expect(quietOf(awake, at('12:30'), CFG)).toBe(null)
+  expect(warningOf(awake, at('12:58'), CFG)).toBe('hungry')
+  // That window over, the next one rests as ever.
+  expect(quietOf(awake, at('18:30'), CFG)).toBe('rest')
 })
 
 test('a care mistake: cold on a working day, at most once per session per day', () => {

@@ -28,6 +28,8 @@ export type Feeding = {
   isAsleep: boolean
   /** `/digi break`: resting until then, or null. */
   breakUntil: number | null
+  /** `/digi wake`: up through the rest window it woke in, until that window ends; null otherwise. */
+  awakeUntil: number | null
   /** The live context's tokens, as the last measurement said; null before one. */
   contextTokens: number | null
 }
@@ -106,9 +108,13 @@ export function quietOf(f: Feeding, now: number, cfg: Config): Quiet | null {
   if (f.isSide) return 'side'
   if (f.isAsleep) return 'asleep'
   if (f.breakUntil !== null && now < f.breakUntil) return 'break'
-  if (isResting(now, cfg)) return 'rest'
+  if (isResting(now, cfg) && !isAwake(f, now)) return 'rest'
   if (f.contextTokens !== null && f.contextTokens < cfg.minContextTokens) return 'small'
   return null
+}
+
+function isAwake(f: Feeding, now: number): boolean {
+  return f.awakeUntil !== null && now < f.awakeUntil
 }
 
 /**
@@ -121,7 +127,7 @@ export function warningOf(f: Feeding, now: number, cfg: Config): 'hungry' | 'sta
   const hunger = hungerOf(now - f.lastFedAt, cfg.ttlMs)
   if (hunger !== 'hungry' && hunger !== 'starving') return null
   const coldAt = f.lastFedAt + cfg.ttlMs
-  const rest = nextRest(now, cfg)
+  const rest = nextRest(isAwake(f, now) ? f.awakeUntil! : now, cfg)
   if (rest !== null && rest < coldAt) return null
   if (f.breakUntil !== null && f.breakUntil > now) return null
   return hunger
