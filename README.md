@@ -32,7 +32,9 @@ shows follows what Claude is doing:
 
 - **Idle:** the pet walks around its screen, with its name, stage, hunger hearts
   and progress to the next stage beside it.
-- **Working:** while a turn runs, the band becomes a fight (see Battles).
+- **Working:** while a turn runs, the band becomes a fight (see Battles). With
+  ten rows or more, the tool running gets a row of its own under the pet: the
+  command, file or task it runs, and for how long (`⏵ Bash  npm test  12s`).
 - **Needs you:** when it is hungry, starving, sick or digivolving, the Digivice
   shell takes that state's colour (orange, red, purple, gold) and the pet says
   why.
@@ -109,6 +111,18 @@ and the like).
 Failures are read from the check's output as well as its exit code, since most
 runs are piped through `tail`. Wins this stage show top right. The win ratio
 counts over the pet's whole life and decides its later evolutions.
+
+### Allies
+
+Each subagent Claude runs joins the fight as a small Digimon in front of the
+pet, its task written above it: Koromon for a general-purpose agent, Tokomon
+for Explore, Tsunomon for Plan, Tanemon or Pagumon for any other type. Up to
+three stand on the field, and `+n` counts the rest. When the subagent is done
+the ally cheers and leaves; if it failed, it lies grey a moment first. One
+still running between turns waits on the pet's own screen.
+
+Allies are for show. What counts toward growth is the **summon**: each Agent
+call that returns without an error, whether or not an ally was drawn for it.
 
 ### Stats
 

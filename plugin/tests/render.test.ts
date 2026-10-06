@@ -101,3 +101,28 @@ test('what a tool runs, cleaned for one row: the first line, no control characte
   expect(toolRun({ tool: 'Agent', subagent_type: 'Explore', description: 'find callers' })).toEqual({ tool: 'Agent', text: 'Explore · find callers' })
   expect(toolRun({ tool: 'mcp__github__search', query: 'x' })).toEqual({ tool: 'search', text: 'x' })
 })
+
+test('allies stand in front of the pet with their task above them; done they cheer, failed they lie grey; more than fit is +n', () => {
+  const text = (g: ReturnType<typeof arena>) => g.map(r => r.map(c => c.ch).join('')).join('\n')
+  const koro = { sprite: SPRITES.koro, label: 'find callers of saveSession' }
+  // None: the field as it always was.
+  expect(arena(3, 62, 'tool', undefined, [])).toEqual(arena(3, 62, 'tool'))
+  const one = arena(3, 62, 'tool', undefined, [koro])
+  expect(text(one)).toContain('find calle')
+  // Its pixels on the floor in front of the pet, the right end of the field.
+  const lit = (g: ReturnType<typeof arena>, from: number) => g.slice(4).some(r => r.slice(from, from + 8).some(c => c.ch !== ' ' && c.c !== '#3a4034'))
+  expect(lit(one, 62 - 13)).toBe(true)
+  expect(text(arena(3, 62, 'tool', undefined, [{ ...koro, leaving: 'done' }]))).toContain('✓ done')
+  expect(text(arena(3, 62, 'tool', undefined, [{ ...koro, leaving: 'failed' }]))).toContain('✗ failed')
+  // 62 columns hold three; the fourth and fifth are +2. Too narrow a field holds none.
+  expect(text(arena(3, 62, 'tool', undefined, [koro, koro, koro, koro, koro]))).toContain('+2')
+  expect(text(arena(3, 30, 'tool', undefined, [koro]))).not.toContain('find')
+})
+
+test('between turns a subagent still out waits on the pet\'s screen, and the pet says so', () => {
+  const v = { ...view, allies: [{ sprite: SPRITES.toko, label: 'exploring the auth flow' }] }
+  const words = band(v, 0, 72).map(r => r.map(c => c.ch).join('')).join('\n')
+  expect(words).toContain('Tokomon is still out: exploring')
+  // No allies: the same band as before.
+  expect(band({ ...view, allies: [] }, 0, 72)).toEqual(band(view, 0, 72))
+})

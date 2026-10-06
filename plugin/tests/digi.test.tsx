@@ -644,3 +644,63 @@ test('/digi wake gets the pet up: through the rest window it is in, and out of /
   expect((await $.command.run({ ...RUN, command: 'digi', args: 'wake' })).text).toContain('awake')
   expect(await band()).not.toContain('asleep')
 })
+
+test('a subagent is an ally on the field while it runs: in on its start, cheering on its stop, out a moment later; a failed one lies grey', async ($, on) => {
+  const clock = host(on, at('09:00'))
+  stepWith(on, () => HIT)
+  let agents = [{ id: 'a1', description: 'find callers of saveSession', type: 'Explore', status: 'running' }]
+  on('agent.list', () => ({ value: agents as never }))
+  on('classic.SubagentStart', () => ({}))
+  on('classic.SubagentStop', () => ({}))
+  await start($)
+  const WORKING = { ...BAND, props: { ...BAND.props, isWorking: true } }
+  const field = async () => {
+    const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...WORKING })
+    const arenaKey = ((await ui.findAll({ type: 'Client' })) as { key?: string }[]).find(c => c.key?.startsWith('arena-'))!.key!
+    const drawn = JSON.stringify(await ui.drawn({ in: arenaKey }))
+    await ui.unmount()
+    return drawn
+  }
+  await $.turn.start({ text: 'go', turnId: 't1' } as never)
+  await $.classic.SubagentStart({ agent_id: 'a1', agent_type: 'Explore' } as never)
+  expect(await field()).toContain('find calle')
+
+  agents = [{ ...agents[0]!, status: 'completed' }]
+  await $.classic.SubagentStop({ agent_id: 'a1', agent_type: 'Explore', stop_hook_active: false, agent_transcript_path: '/t' } as never)
+  expect(await field()).toContain('✓ done')
+  await clock.advance(3000)
+  expect(await field()).not.toContain('done')
+
+  // A failed one.
+  agents = [{ id: 'a2', description: 'run the e2e suite', type: 'general-purpose', status: 'running' }]
+  await $.classic.SubagentStart({ agent_id: 'a2', agent_type: 'general-purpose' } as never)
+  agents = [{ ...agents[0]!, status: 'failed' }]
+  await $.classic.SubagentStop({ agent_id: 'a2', agent_type: 'general-purpose', stop_hook_active: false, agent_transcript_path: '/t' } as never)
+  expect(await field()).toContain('✗ failed')
+})
+
+test('an ally whose stop was missed leaves on the next tick, once its subagent is no longer listed', async ($, on) => {
+  const clock = host(on, at('09:00'))
+  stepWith(on, () => HIT)
+  let agents = [{ id: 'a1', description: 'plan the migration', type: 'Plan', status: 'running' }]
+  on('agent.list', () => ({ value: agents as never }))
+  on('classic.SubagentStart', () => ({}))
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' } as never)
+  await $.classic.SubagentStart({ agent_id: 'a1', agent_type: 'Plan' } as never)
+  const field = async () => {
+    const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...BAND, props: { ...BAND.props, isWorking: true } })
+    const arenaKey = ((await ui.findAll({ type: 'Client' })) as { key?: string }[]).find(c => c.key?.startsWith('arena-'))!.key!
+    const drawn = JSON.stringify(await ui.drawn({ in: arenaKey }))
+    await ui.unmount()
+    return drawn
+  }
+  // Still running: it stays through a tick.
+  await clock.advance(15_000)
+  expect(await field()).toContain('plan the m')
+  agents = []
+  await clock.advance(15_000)
+  expect(await field()).toContain('✓ done')
+  await clock.advance(3000)
+  expect(await field()).not.toContain('plan the m')
+})

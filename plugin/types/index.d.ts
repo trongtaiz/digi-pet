@@ -17,6 +17,9 @@ export type DigiMood = { kind: 'normal' | 'eating' | 'sick' | 'happy'; turnsLeft
 /** What the running turn is doing; `idle` between turns. */
 export type DigiActivity = { act: 'idle' | 'think' | 'tool' | 'say' | 'ask'; tool?: string; run?: DigiRun }
 
+/** A running subagent as an ally in the band: its agent id and type, its task, its Digimon, and whether it is leaving. */
+export type DigiAlly = { id: string; type: string; label: string; species: string; leaving?: 'done' | 'failed' }
+
 /** The latest main-loop tool call running, for the row under the pet: its id, the tool, and what it runs. */
 export type DigiRun = { id: string; tool: string; text: string }
 
@@ -65,6 +68,8 @@ declare module 'claude-code' {
       growth: DigiGrowth | null
       evolving: DigiEvolving | null
       battle: DigiBattle
+      /** Subagents running, or just finished, as allies. */
+      allies: DigiAlly[]
     }
   }
 }

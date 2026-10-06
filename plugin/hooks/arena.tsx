@@ -6,10 +6,12 @@ import type { ClientModule } from 'claude-code'
 import { segments } from './cells'
 import { arena } from './render'
 import type { Act, Fight } from './render'
+import { allyViews } from './view'
+import type { AllyJson } from './view'
 
 export const ARENA_MS = 120
 
-export type ArenaProps = { width: number; act: Act; fight: Fight; isStill: boolean }
+export type ArenaProps = { width: number; act: Act; fight: Fight; allies: AllyJson[]; isStill: boolean }
 
 const Arena: ClientModule<ArenaProps, number> = (props, surface) => {
   const { Box, Text } = surface.elements
@@ -19,7 +21,7 @@ const Arena: ClientModule<ArenaProps, number> = (props, surface) => {
     surface.setState(0)
   }
   const width = Math.max(8, Math.min(surface.columns || props.width, props.width))
-  const rows = arena(surface.state ?? 0, width, props.act, props.fight)
+  const rows = arena(surface.state ?? 0, width, props.act, props.fight, allyViews(props.allies))
 
   return (
     <Box flexDirection="column">

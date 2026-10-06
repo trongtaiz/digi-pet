@@ -30,3 +30,10 @@ export function toolRun(e: { tool: string } & Record<string, unknown>): { tool: 
   const line = text.split('\n')[0]!.replace(/\t/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim()
   return { tool, text: line }
 }
+
+/** Which Baby II stands in for a subagent, by its type: the same one every time, so you learn them. */
+export function allyOf(type: string): string {
+  const known: Record<string, string> = { 'general-purpose': 'koro', Explore: 'toko', Plan: 'tuno' }
+  const others = ['tane', 'pagu']
+  return known[type] ?? others[[...type].reduce((h, ch) => h + ch.charCodeAt(0), 0) % others.length]!
+}

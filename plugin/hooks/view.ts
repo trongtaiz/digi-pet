@@ -1,7 +1,7 @@
 // The pet as plain data, what the hooks hand a drawing (a Client module's props
 // must be JSON): the species by id instead of its sprite.
 import { EVOLVE_FRAMES } from './render'
-import type { Act, Attribute, Hunger, Mood, PaneView, PetView } from './render'
+import type { Act, AllyView, Attribute, Hunger, Mood, PaneView, PetView } from './render'
 import { SPRITES } from './sprites.gen'
 import type { Sprite } from './sprite'
 
@@ -19,6 +19,14 @@ export type ViewJson = {
   act?: Act
   tool?: string
   next?: { label: string; ratio: number } | null
+  allies?: AllyJson[]
+}
+
+/** An ally as a drawing's props carry it: the species by id. */
+export type AllyJson = { species: string; label: string; leaving?: 'done' | 'failed' }
+
+export function allyViews(allies: readonly AllyJson[]): AllyView[] {
+  return allies.map(({ species, ...rest }) => ({ ...rest, sprite: spriteOf(species) }))
 }
 
 export type PaneJson = ViewJson & { careMistakes: number; facts: string[] } & Pick<PaneView, 'stats' | 'battles' | 'ageDays' | 'log' | 'trophies' | 'weight'>
@@ -33,9 +41,10 @@ export function isSpecies(id: string): boolean {
 
 /** The view at frame `t`; a digivolution loops, holding its end a while. */
 export function petView(v: ViewJson, t: number): PetView {
-  const { species, evolvingTo, ...rest } = v
+  const { species, evolvingTo, allies, ...rest } = v
   return {
     ...rest,
+    ...(allies ? { allies: allyViews(allies) } : {}),
     sprite: spriteOf(species),
     evolving: evolvingTo ? { to: spriteOf(evolvingTo), t: t % (EVOLVE_FRAMES + 8) } : undefined,
   }

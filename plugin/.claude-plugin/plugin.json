@@ -1,6 +1,6 @@
 {
   "name": "digi-pet",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Digimon V-Pet above the prompt that eats this session's prompt cache and grows from your work: it gets hungry before the cache goes cold, rests at lunch and at night, and digivolves by Digital Monster Color's rules from your turns, tests, commits and care",
   "author": {
     "name": "trongtaiz",

@@ -32,7 +32,12 @@ export type PetView = {
   act?: Act
   /** The tool the turn is running (`Bash: npm test`), for the bubble. */
   tool?: string
+  /** Subagents running (or just finished), each a small Digimon fighting beside the pet. */
+  allies?: AllyView[]
 }
+
+/** A subagent as an ally: its Digimon, its task in a few words, and whether it is leaving (done or failed). */
+export type AllyView = { sprite: Sprite; label: string; leaving?: 'done' | 'failed' }
 
 export const STAT_NAMES = ['STA', 'INT', 'ATK', 'DEF', 'SPD', 'SYN'] as const
 export type StatName = (typeof STAT_NAMES)[number]
@@ -180,6 +185,9 @@ function lcdCanvas(v: PetView, t: number, w: number, walk: boolean): Canvas {
         working(cv, v, frame, w, icon)
         break
       }
+      // A subagent still out between turns: its ally waits at the left of the screen, the pet walking in front of it.
+      const out = v.allies?.find(a => !a.leaving)
+      if (out) plotHalf(cv, out.sprite, frame, frame % 4 === 0 ? 'attack' : 'idle', 1, 8)
       // An egg has one frame: it rocks instead.
       drawSprite(cv, v.sprite, frame, x + (v.sprite.stage === 'egg' ? frame % 2 : 0), 0, { flip })
   }
@@ -366,6 +374,8 @@ function workSpeech(v: PetView): string {
   if (!v.act) {
     if (v.mood === 'asleep') return 'Zzz…'
     if (v.mood === 'happy') return '♥ Thanks for the pat!'
+    const out = v.allies?.find(a => !a.leaving)
+    if (out) return `${out.sprite.name} is still out: ${out.label}`
     if (v.hunger === 'cold') return 'The cache went cold. Send a prompt to warm it up.'
     return v.hunger === 'peckish' ? 'Getting a little peckish…' : ''
   }
@@ -561,26 +571,28 @@ function statLines(stats: Record<StatName, number>, width: number): [string, Sty
  * block of the sprite becomes one pixel of its commonest colour (clear when
  * mostly clear), drawn in half-blocks on the LCD, 10 cells across and 4 rows.
  */
+/** A 16-pixel frame at 8: each 2×2 block its commonest colour, clear where under two of its pixels are set. */
+function halfSize(px: (string | undefined)[][]): (string | undefined)[][] {
+  return Array.from({ length: 8 }, (_, y) =>
+    Array.from({ length: 8 }, (_, x) => {
+      const block = [px[2 * y]?.[2 * x], px[2 * y]?.[2 * x + 1], px[2 * y + 1]?.[2 * x], px[2 * y + 1]?.[2 * x + 1]].filter((c): c is string => !!c)
+      if (block.length < 2) return undefined
+      const counts = new Map<string, number>()
+      for (const c of block) counts.set(c, (counts.get(c) ?? 0) + 1)
+      return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0]
+    }),
+  )
+}
+
+/** A sprite at half size, its top left at (`x`, `y`), each colour through `paint`. */
+function plotHalf(cv: Canvas, sprite: Sprite, frame: number, pose: Pose, x: number, y: number, paint: (c: string) => string = c => c): void {
+  halfSize(pixels(sprite, frame, pose)).forEach((row, j) => row.forEach((c, i) => c && plot(cv, x + i, y + j, paint(c))))
+}
+
 export function miniLcd(v: PetView, t: number): Grid {
   const night = v.mood === 'asleep'
   const bg = night ? LCD_NIGHT : LCD
-  const px = pixels(v.sprite, night ? 0 : Math.floor(t))
-  const small: (string | undefined)[][] = []
-  for (let y = 0; y < 8; y++) {
-    const row: (string | undefined)[] = []
-    for (let x = 0; x < 8; x++) {
-      const block = [px[2 * y]?.[2 * x], px[2 * y]?.[2 * x + 1], px[2 * y + 1]?.[2 * x], px[2 * y + 1]?.[2 * x + 1]].filter((c): c is string => !!c)
-      if (block.length < 2) {
-        row.push(undefined)
-        continue
-      }
-      const counts = new Map<string, number>()
-      for (const c of block) counts.set(c, (counts.get(c) ?? 0) + 1)
-      const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0]
-      row.push(night ? mix(best, LCD_NIGHT, 0.6) : best)
-    }
-    small.push(row)
-  }
+  const small = halfSize(pixels(v.sprite, night ? 0 : Math.floor(t))).map(row => row.map(c => (c && night ? mix(c, LCD_NIGHT, 0.6) : c)))
   const g = blank(10, 4)
   for (let r = 0; r < 4; r++) {
     g[r]![0] = { ch: ' ', bg }
@@ -679,14 +691,15 @@ const FIRE_AT = 2
 const FLIGHT = 5
 const STEP = 2
 
-export function arena(t: number, w: number, act: Act, fight: Fight = { open: 0, won: 0, flash: false }): Grid {
+export function arena(t: number, w: number, act: Act, fight: Fight = { open: 0, won: 0, flash: false }, allies: readonly AllyView[] = []): Grid {
   const cv = canvas(w, 8)
   for (let x = 0; x < w; x += 2) plot(cv, x, 15, '#3a4034')
   const bossX = Math.max(0, Math.floor(w * 0.25) - 8)
   if (fight.flash && t < WIN_FRAMES) {
     // A check gone green again: the boss blows up.
     for (let i = 0; i < 3; i++) draw(cv, bossX + 2 + i * 4, 2 + ((i * 3) % 6), BURST[Math.min(BURST.length - 1, Math.floor(t / 2) + i) % BURST.length]!, BURST_COLORS)
-    const g = cells(cv)
+    const labels = drawAllies(cv, t, w, allies)
+    const g = withLabels(cells(cv), labels)
     put(g, Math.min(w - 5, bossX + 18), 2, 'WIN!', { c: '#e5a50a', b: true })
     return withScore(g, w, fight)
   }
@@ -700,7 +713,8 @@ export function arena(t: number, w: number, act: Act, fight: Fight = { open: 0, 
     const to = bossX + 16
     if (p < 3) draw(cv, from - Math.floor(((from - to) * p) / 3), 6, BOLT, { o: '#e5a50a' })
     else if (p === 3) draw(cv, to - 2, 4, BURST[0]!, BURST_COLORS)
-    const g = cells(cv)
+    const labels = drawAllies(cv, t, w, allies)
+    const g = withLabels(cells(cv), labels)
     const red = w >= 40 ? `${fight.open} check${fight.open > 1 ? 's' : ''} red` : `${fight.open} red`
     // Under the score, right of the boss.
     put(g, w - textWidth(red) - 1, 1, red, { c: '#d0021b', b: true })
@@ -712,7 +726,8 @@ export function arena(t: number, w: number, act: Act, fight: Fight = { open: 0, 
       const x = Math.floor((t * 2 + i * (w / 4)) % w)
       draw(cv, x, 2 + ((i * 5 + t) % 9), SPARKLE, { y: i % 2 ? '#e5a50a' : '#61afef' })
     }
-    return cells(cv)
+    const labels = drawAllies(cv, t, w, allies)
+    return withLabels(cells(cv), labels)
   }
   const frame = act === 'ask' ? 0 : t
   const lanes = act === 'tool' ? 2 : 1
@@ -737,7 +752,53 @@ export function arena(t: number, w: number, act: Act, fight: Fight = { open: 0, 
       draw(cv, -8 + STEP * hit, y, BURST[p - hit]!, BURST_COLORS)
     }
   }
-  return withScore(cells(cv), w, fight)
+  const labels = drawAllies(cv, t, w, allies)
+  return withScore(withLabels(cells(cv), labels), w, fight)
+}
+
+const PELLET = ['bb', 'bb']
+const GREY = '#8a8a8a'
+/** One ally's place on the field: 12 columns each, from just in front of the pet. */
+const ALLY_STEP = 12
+const MAX_ALLIES = 3
+
+/**
+ * The allies on the field's floor in front of the pet, each with its task above it. Running, one bobs
+ * and shoots a pellet every six frames; done, it cheers in a shower of sparkles; failed, it lies grey.
+ * As many as fit, up to three, and `+n` for the rest.
+ */
+function drawAllies(cv: Canvas, t: number, w: number, allies: readonly AllyView[]): [number, string, string][] {
+  const fits = Math.min(MAX_ALLIES, Math.max(0, Math.floor((w - 20) / ALLY_STEP)))
+  const shown = allies.slice(0, fits)
+  const labels: [number, string, string][] = []
+  shown.forEach((a, i) => {
+    const x = w - 13 - i * ALLY_STEP
+    if (a.leaving === 'failed') {
+      plotHalf(cv, a.sprite, 0, 'hurt', x, 9, c => mix(mix(c, '#808080', 0.8), '#000000', 0.2))
+      labels.push([x - 1, '✗ failed', '#c0392b'])
+      return
+    }
+    if (a.leaving === 'done') {
+      plotHalf(cv, a.sprite, 0, 'happy', x, 8 - (t % 4 < 2 ? 1 : 0))
+      draw(cv, x - 4 + (t % 3), 4 + (t % 2) * 4, SPARKLE, { y: t % 2 ? '#f1c40f' : '#61afef' })
+      draw(cv, x + 8 - (t % 3), 6 - (t % 2) * 3, SPARKLE, { y: t % 2 ? '#61afef' : '#f1c40f' })
+      labels.push([x - 1, '✓ done', '#98c379'])
+      return
+    }
+    const p = (t + i * 2) % 6
+    plotHalf(cv, a.sprite, Math.floor(t / 3), 'idle', x, 8 + (p === 3 ? -1 : 0))
+    if (p >= 1) draw(cv, x - 3 - (p - 1) * 6, 11, PELLET, { b: '#61afef' })
+    labels.push([x, [...a.label].slice(0, ALLY_STEP - 2).join(''), GREY])
+  })
+  const rest = allies.length - shown.length
+  if (rest > 0 && shown.length) labels.push([w - 13 - shown.length * ALLY_STEP + 6, `+${rest}`, GREY])
+  return labels
+}
+
+/** The allies' words, on the row above them. */
+function withLabels(g: Grid, labels: readonly [number, string, string][]): Grid {
+  for (const [x, text, c] of labels) put(g, Math.max(0, x), 3, text, { c })
+  return g
 }
 
 /** The stage's real wins, top right. */

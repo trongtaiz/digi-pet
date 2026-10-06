@@ -7,8 +7,8 @@
 import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, Register, RenderElement } from 'claude-code'
 
-import type { DigiActivity, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
-import { busyLabel, toolLabel, toolRun } from './activity'
+import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
+import { allyOf, busyLabel, toolLabel, toolRun } from './activity'
 import { segments } from './cells'
 import type { Grid } from './cells'
 import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
@@ -52,6 +52,8 @@ const WORK_ROWS = 8
 /** The pet's block while it fights: its screen and a few words, the arena takes the rest. */
 const WORK_BLOCK = 54
 const MIN_ARENA = 20
+/** How long an ally stays on the field once its subagent is done (or failed), cheering (or lying grey). */
+const LEAVE_MS = 2500
 /** How long the band plays a digivolution. */
 const EVOLVE_MS = 20_000
 /** The context this full is an overfeed; it counts again once the context has dropped under REFED. */
@@ -74,6 +76,7 @@ const activity = atom({ plugin: 'digi-pet', key: 'activity' } as const, { act: '
 const growth = atom({ plugin: 'digi-pet', key: 'growth' } as const, null as DigiGrowth | null)
 const evolving = atom({ plugin: 'digi-pet', key: 'evolving' } as const, null as DigiEvolving | null)
 const battle = atom({ plugin: 'digi-pet', key: 'battle' } as const, { open: 0, won: 0, flash: false } as DigiBattle)
+const allies = atom({ plugin: 'digi-pet', key: 'allies' } as const, [] as DigiAlly[])
 
 const USAGE = '[stats | pane | log | pet | jogress | sleep | wake | break 90m|until 15:30|off | side [off] | sim <species> [state] [to] | sim off | debug ttl <min>|off]'
 
@@ -228,6 +231,7 @@ async function viewOf($: EngineInterface, ctx: Ctx, t: number): Promise<ViewJson
     minutesLeft: minutesLeft(f, t, cfg),
     mood: m.kind !== 'normal' ? m.kind : isNapping ? 'asleep' : 'normal',
     ...withText('quiet', quietText(q, f, t, cfg)),
+    ...(await alliesOf($)),
     ...(await actOf($)),
   }
 }
@@ -284,6 +288,25 @@ function growthLines(g: DigiGrowth): string[] {
   ]
 }
 
+/** The allies for the view, as plain data; nothing when there are none. */
+async function alliesOf($: EngineInterface): Promise<Pick<ViewJson, 'allies'>> {
+  const list = await read($, allies)
+  return list.length ? { allies: list.map(({ species, label, leaving }) => ({ species, label, ...(leaving ? { leaving } : {}) })) } : {}
+}
+
+/** This session's agents, or null when the engine will not say. */
+async function agents($: EngineInterface) {
+  return $.agent.list().catch(() => null)
+}
+
+/** An ally's subagent has stopped: it cheers (or lies grey) a moment, then leaves the field. */
+async function leave($: EngineInterface, id: string, how: 'done' | 'failed') {
+  const list = await read($, allies)
+  if (!list.some(a => a.id === id && !a.leaving)) return
+  await update($, allies, l => l.map(a => (a.id === id ? { ...a, leaving: how } : a)))
+  $.clock.after(LEAVE_MS, () => void update($, allies, l => l.filter(a => a.id !== id)))
+}
+
 /** The running turn's act and tool for the view, or nothing between turns. */
 async function actOf($: EngineInterface): Promise<Pick<ViewJson, 'act' | 'tool'>> {
   const a = await read($, activity)
@@ -314,6 +337,14 @@ async function notify($: EngineInterface, ctx: Ctx, title: string, body: string)
 async function onTick($: EngineInterface, ctx: Ctx) {
   const t = await $.clock.now()
   await update($, now, () => t)
+  // A stop the hooks missed: an ally whose subagent is gone or over leaves all the same.
+  const out = (await read($, allies)).filter(a => !a.leaving)
+  const listed = out.length ? await agents($) : null
+  for (const a of listed ? out : []) {
+    const status = listed!.find(x => x.id === a.id)?.status
+    if (status === undefined || status === 'completed') await leave($, a.id, 'done')
+    else if (status === 'failed' || status === 'killed') await leave($, a.id, 'failed')
+  }
   // Another session digivolved the pet: draw what it is now.
   const kept = asPet(await $.store.get('pet'))
   if (kept.species !== (await read($, species)) && isSpecies(kept.species)) await grow($, ctx)
@@ -541,6 +572,21 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
+  // A subagent is an ally on the field while it runs: in when it starts, out (done or failed) when it stops.
+  on('classic.SubagentStart', async ($, e, next) => {
+    const info = (await agents($))?.find(a => a.id === e.agent_id)
+    const ally: DigiAlly = { id: e.agent_id, type: e.agent_type, label: info?.description.trim() || e.agent_type, species: allyOf(e.agent_type) }
+    await update($, allies, list => (list.some(a => a.id === ally.id) ? list : [...list, ally]))
+    return next(e)
+  })
+
+  on('classic.SubagentStop', async ($, e, next) => {
+    // Its status may still read running as it stops: only a failed or killed one is a loss.
+    const status = (await agents($))?.find(a => a.id === e.agent_id)?.status
+    await leave($, e.agent_id, status === 'failed' || status === 'killed' ? 'failed' : 'done')
+    return next(e)
+  })
+
   on('prompt.edit', async ($, e, next) => {
     const box = await next(e)
     const isOpen = isPickerOpen(box.text, box.cursor)
@@ -762,7 +808,7 @@ export const register: Register = (on, options) => {
       const top =
         isFighting && field >= MIN_ARENA ? (
           <Box flexDirection="row" columnGap={2} alignItems="flex-end">
-            <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, isStill: ctx.isStill }} />
+            <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, allies: v.allies ?? [], isStill: ctx.isStill }} />
             {screen}
           </Box>
         ) : (
