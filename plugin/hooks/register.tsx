@@ -35,7 +35,7 @@ import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, band, isLoud, miniBand, notifi
 import type { Attribute, Hunger } from './render'
 import type { RunProps } from './run'
 import type { ScreenProps } from './screen'
-import { isRisky, isTrophy, signalOf } from './signals'
+import { isRisky, signalOf, trophiesOf } from './signals'
 import { SPECIES } from './species.gen'
 import { isSpecies, petView, spriteOf } from './view'
 import type { PaneJson, ViewJson } from './view'
@@ -429,7 +429,8 @@ async function trained<R extends object>($: EngineInterface, ctx: Ctx, e: { tool
   if (signal.kind === 'write' && signal.lines) await bump($, ctx, { linesWritten: signal.lines })
   if (signal.kind === 'summon') await bump($, ctx, { summons: 1 })
   // A commit can ride along with a check (`npm test && git commit`): judged on its own.
-  if (e.tool === 'Bash' && isTrophy(String(input.command ?? ''), r.text ?? '', r.isError === true)) await bump($, ctx, { trophies: 1 })
+  const trophies = trophiesOf(e.tool, input, r.isError === true, r.text ?? '')
+  if (trophies) await bump($, ctx, { trophies })
   if (e.tool === 'Bash' && isRisky(String(input.command ?? ''))) await bump($, ctx, { chaos: 1 })
   if (signal.kind === 'check' && !signal.isPass) ctx.red.add(signal.runner)
   if (signal.kind === 'check' && signal.isPass && ctx.red.delete(signal.runner)) {

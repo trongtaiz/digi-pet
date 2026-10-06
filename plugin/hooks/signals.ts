@@ -15,9 +15,28 @@ const CHECK =
 const FAILED =
   /\b[1-9]\d* (?:failed|failing|fail)\b|^\s*FAIL\b|\(fail\)|error TS\d+|Found [1-9]\d* errors?|\([1-9]\d* errors?,|npm ERR!|error\[E\d+\]|\bFAILED\b|BUILD FAILED|Command failed|exited with code [1-9]/m
 
-/** A commit's output (`[main 1a2b3c4] …`) or a new pull request's URL: proof of a trophy, where no error is none. */
+/** `git`, with any options before the subcommand (`git -C <dir> commit`). */
+const GIT = String.raw`\bgit(?:\s+(?:-[Cc]\s+\S+|--[\w-]+(?:=\S+)?))*\s+`
+const COMMIT = new RegExp(String.raw`${GIT}commit\b`)
+/** A commit's output (`[main 1a2b3c4] …`): git prints it only for a commit made, so it is proof even when a later step of the call fails. */
 const COMMITTED = /^\[[^\]\n]+ [0-9a-f]{7,40}\]/m
-const PR_OPENED = /https:\/\/github\.com\/[^\s/]+\/[^\s/]+\/pull\/\d+/
+/**
+ * What opens a pull or merge request: the forges' CLIs (GitHub, GitLab, Gitea,
+ * Forgejo, Azure DevOps), a push to GitLab with `merge_request.create`, and a
+ * push to Gerrit's `refs/for/`.
+ */
+const PR_CREATE = new RegExp(
+  String.raw`\b(?:gh\s+pr\s+create|glab\s+mr\s+create|tea\s+(?:pr|pulls?)\s+create|fj\s+pr\s+create|az\s+repos\s+pr\s+create)\b|${GIT}push\b[^\n;&|]*(?:merge_request\.create|refs\/for\/)`,
+)
+/**
+ * The new request's URL as the forge prints it: `/pull/7` (GitHub), `/-/merge_requests/12`
+ * (GitLab), `/pulls/3` (Gitea, Forgejo), `/pullRequests/7` (Azure DevOps), a Gerrit change marked [NEW].
+ */
+const PR_OPENED = /https?:\/\/\S+?\/(?:pull|pulls|-\/merge_requests|pullrequests?)\/\d+\b|https?:\/\/\S+\/c\/\S+\/\+\/\d+\b.*\[NEW\]/i
+/** gh and glab print the open request's URL when they refuse to open another. */
+const PR_EXISTS = /already exists/i
+/** An MCP tool that opens a pull or merge request (`mcp__gitlab__create_merge_request`, `…__repo_create_pull_request`). */
+const PR_TOOL = /^mcp__.+__(?:\w+_)?create_(?:pull|merge)_request$/
 /** Risky commands; `--force-with-lease` is the careful push and is not one. */
 const RISKY = /\bgit\s+push\b[^\n;&|]*(?:--force(?![-\w])|\s-f\b)|--no-verify\b|\bgit\s+reset\s+--hard\b/
 /** `rm -rf` of anything but a temp folder or build output; a `$VAR` path names no folder we can judge. */
@@ -31,9 +50,14 @@ export type ToolSignal =
   | { kind: 'summon' }
   | { kind: 'other' }
 
-/** Whether a shell command made a commit or opened a pull request, as its output proves: a trophy. */
-export function isTrophy(command: string, text: string, isError: boolean): boolean {
-  return !isError && ((/\bgit\s+commit\b/.test(command) && COMMITTED.test(text)) || (/\bgh\s+pr\s+create\b/.test(command) && PR_OPENED.test(text)))
+/** The trophies a call won: a commit made and a pull or merge request opened, each as its output proves, on any forge. */
+export function trophiesOf(tool: string, input: Record<string, unknown>, isError: boolean, text: string): number {
+  if (PR_TOOL.test(tool)) return isError ? 0 : 1
+  if (tool !== 'Bash') return 0
+  const command = String(input.command ?? '')
+  const committed = COMMIT.test(command) && COMMITTED.test(text)
+  const opened = !isError && PR_CREATE.test(command) && PR_OPENED.test(text) && !PR_EXISTS.test(text)
+  return Number(committed) + Number(opened)
 }
 
 /** Whether a shell command is a risky move (Chaos). */

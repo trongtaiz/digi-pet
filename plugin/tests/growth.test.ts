@@ -4,7 +4,7 @@ import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, eggO
 import type { Counts, Rule } from '../hooks/growth'
 import { ZERO } from '../hooks/ledger'
 import type { Counters } from '../hooks/ledger'
-import { isRisky, isTrophy, signalOf } from '../hooks/signals'
+import { isRisky, signalOf, trophiesOf } from '../hooks/signals'
 import { SPECIES } from '../hooks/species.gen'
 
 const day = (c: Partial<Counters>): Counters => ({ ...ZERO, ...c })
@@ -168,12 +168,44 @@ test('signals: research, lines written, and checks read from their output, piped
   expect(run('git status', '')).toEqual({ kind: 'other' })
   expect(signalOf('Bash', { command: 'npm test', run_in_background: true }, false, '')).toEqual({ kind: 'other' })
   // Trophies need proof in the output.
-  expect(isTrophy('git commit -m "x"', '[main 1a2b3c4] x\n 1 file changed', false)).toBe(true)
-  expect(isTrophy('npm test && git commit -m "x"', 'Tests: 3 passed\n[main 1a2b3c4] x', false)).toBe(true)
-  expect(isTrophy('git commit -m "x"', 'nothing to commit, working tree clean', false)).toBe(false)
-  expect(isTrophy('gh pr create --fill', 'https://github.com/me/repo/pull/42', false)).toBe(true)
-  expect(isTrophy('gh pr create --fill', 'a pull request for branch "x" already exists', false)).toBe(false)
+  const won = (command: string, text: string, isError = false) => trophiesOf('Bash', { command }, isError, text)
+  expect(won('git commit -m "x"', '[main 1a2b3c4] x\n 1 file changed')).toBe(1)
+  expect(won('npm test && git commit -m "x"', 'Tests: 3 passed\n[main 1a2b3c4] x')).toBe(1)
+  expect(won('git commit -m "x"', 'nothing to commit, working tree clean')).toBe(0)
+  expect(won('gh pr create --fill', 'https://github.com/me/repo/pull/42')).toBe(1)
+  expect(won('gh pr create --fill', 'a pull request for branch "x" already exists')).toBe(0)
+  expect(won('gh pr create --fill 2>&1 | tail -2', 'a pull request for branch "x" into branch "main" already exists:\nhttps://github.com/me/repo/pull/42')).toBe(0)
   expect(signalOf('Agent', { prompt: 'look' }, false, '')).toEqual({ kind: 'summon' })
+})
+
+test('trophies on any forge: GitLab, Gitea and Forgejo, Azure DevOps and Gerrit, from their CLIs, a push or an MCP tool', () => {
+  const won = (command: string, text: string, isError = false) => trophiesOf('Bash', { command }, isError, text)
+  // A commit is git's, wherever the remote is: `git -C <dir>` and other options before the subcommand too.
+  expect(won('git -C /Users/me/app commit -m "x"', '[feat/x 1a2b3c4] x')).toBe(1)
+  expect(won('git -c user.name=me --no-pager commit -m "x"', '[main (root-commit) 1a2b3c4] x')).toBe(1)
+  // The commit line is proof on its own: a PR step failing after it in the same call takes nothing away.
+  expect(won('git commit -m x && git push && gh pr create --fill', '[feat/x 1a2b3c4] x\nnone of the git remotes configured for this repository point to a known GitHub host', true)).toBe(1)
+  // A commit and a merge request in one call are two.
+  expect(won('git commit -m x && git push -u origin HEAD && glab mr create --fill --yes', '[feat/x 1a2b3c4] x\n!12 x (feat/x)\n https://gitlab.com/me/app/-/merge_requests/12')).toBe(2)
+  // GitLab, self-hosted with nested groups; a push that opens one with a push option.
+  expect(won('glab mr create --fill --yes', 'Creating merge request for feat/x into main in a/b/c\n\n!12 x (feat/x)\n https://git.corp.io/a/b/c/-/merge_requests/12')).toBe(1)
+  expect(won('git push -o merge_request.create -o merge_request.target=main origin HEAD', 'remote: View merge request for feat/x:\nremote:   https://gitlab.com/me/app/-/merge_requests/12')).toBe(1)
+  expect(won('git -C /Users/me/app push -o merge_request.create origin HEAD', 'remote: View merge request for feat/x:\nremote:   https://gitlab.com/me/app/-/merge_requests/12')).toBe(1)
+  expect(won('git push origin HEAD', 'remote: To create a merge request for feat/x, visit:\nremote:   https://gitlab.com/me/app/-/merge_requests/new?merge_request%5Bsource_branch%5D=feat%2Fx')).toBe(0)
+  expect(won('git push origin HEAD', 'remote: View merge request for feat/x:\nremote:   https://gitlab.com/me/app/-/merge_requests/12')).toBe(0)
+  expect(won('glab mr create --fill --yes 2>&1', 'failed to create merge request: another open merge request already exists for this source branch: !12\nhttps://gitlab.com/me/app/-/merge_requests/12')).toBe(0)
+  // Gitea, Forgejo, Codeberg; Azure DevOps (its JSON names the API's url); Gerrit's push to refs/for, new changes only.
+  expect(won('tea pulls create --title x', 'https://gitea.com/me/app/pulls/3')).toBe(1)
+  expect(won('fj pr create "x"', 'created pull request #3: https://codeberg.org/me/app/pulls/3')).toBe(1)
+  expect(won('az repos pr create --title x', '{\n  "pullRequestId": 7,\n  "url": "https://dev.azure.com/org/proj/_apis/git/repositories/0f1e/pullRequests/7"\n}')).toBe(1)
+  expect(won('git push origin HEAD:refs/for/main', 'remote: SUCCESS\nremote:   https://review.corp.io/c/app/+/12345 x [NEW]')).toBe(1)
+  expect(won('git push origin HEAD:refs/for/main', 'remote: SUCCESS\nremote:   https://review.corp.io/c/app/+/12345 x')).toBe(0)
+  // Through a forge's MCP server: the tool that opens a pull or merge request, when it answers.
+  expect(trophiesOf('mcp__gitlab__create_merge_request', { title: 'x' }, false, '{"iid":12}')).toBe(1)
+  expect(trophiesOf('mcp__github__create_pull_request', { title: 'x' }, false, '{"number":7}')).toBe(1)
+  expect(trophiesOf('mcp__ado__repo_create_pull_request', { title: 'x' }, false, '{}')).toBe(1)
+  expect(trophiesOf('mcp__gitlab__create_merge_request', { title: 'x' }, true, 'Conflict')).toBe(0)
+  expect(trophiesOf('mcp__gitlab__get_merge_request', { iid: 12 }, false, '{"iid":12}')).toBe(0)
 })
 
 test('risky moves: a forced push, a skipped hook, a hard reset, an rm -rf of anything but scratch', () => {
