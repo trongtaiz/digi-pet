@@ -19,6 +19,9 @@ import { pixels } from '../plugin/hooks/sprite'
 import type { Pose } from '../plugin/hooks/sprite'
 import { SPRITES } from '../plugin/hooks/sprites.gen'
 import dmc from '../data/dmc.json'
+import { CHAOS_PER_DAY, GATES, TRAINING_PER_DAY } from '../plugin/hooks/growth'
+import type { Rule } from '../plugin/hooks/growth'
+import { SPECIES } from '../plugin/hooks/species.gen'
 import type { Range, Requirement, Species } from './crawl-humulos'
 import type { SpeciesId } from '../plugin/hooks/sprites.gen'
 import type { Sprite } from '../plugin/hooks/sprite'
@@ -296,6 +299,98 @@ function alertSection(): string {
   return `<section id="alerts"><h2>Alert copy</h2><table><tr><th>state</th><th>bubble</th><th>toast</th><th>macOS notification</th><th>status line</th></tr>${rows.join('')}</table></section>`
 }
 
+// ---- the evolution guide ----------------------------------------------------
+
+const GUIDE_STAGES = ['egg', 'baby1', 'baby2', 'rookie', 'champion', 'ultimate', 'mega', 'superMega'] as const
+const GUIDE_LABEL: Record<string, string> = { egg: 'Digitama', baby1: 'Baby I', baby2: 'Baby II', rookie: 'Rookie', champion: 'Champion', ultimate: 'Ultimate', mega: 'Mega', superMega: 'Jogress' }
+
+/** How long a stage lasts before the pet can digivolve (GATES, at normal pace), in words. */
+function gateText(stage: string): string {
+  const g = GATES[stage]
+  if (!g) return ''
+  const parts = [g.days && `${g.days} active days`, g.turns && `${g.turns} turns`, g.trophies && `${g.trophies} trophies`, g.summons && `${g.summons} summons`].filter(Boolean)
+  return parts.length ? `lasts ${parts.join(' + ')}` : ''
+}
+
+/** A count's range as the guide words it: `≤3 care mistakes`, `16+ training`, `3–5 sleep disturbances`. */
+function amount(r: { min: number; max: number | null }, noun: string): string {
+  if (r.max === null) return `${r.min}+ ${noun}`
+  if (r.min === r.max) return `${r.min} ${noun}`
+  if (r.min === 0) return `≤${r.max} ${noun}`
+  return `${r.min}–${r.max} ${noun}`
+}
+
+/** One way to digivolve, in digi-pet's terms. */
+function ruleText(r: Rule): string {
+  if (r.jogress) return `<span class="k">/digi jogress</span> with ${esc(r.jogress)} · 15+ battles · 80%+ wins`
+  const parts = [
+    r.careMistakes && amount(r.careMistakes, 'care mistakes'),
+    r.training && amount(r.training, 'training'),
+    r.overfeed && amount(r.overfeed, 'overfeeds'),
+    r.sleepDisturbances && amount(r.sleepDisturbances, 'sleep disturbances'),
+    r.battles && amount(r.battles, 'battles'),
+    r.winRatio && `${r.winRatio.min}%+ wins`,
+  ].filter(Boolean) as string[]
+  return parts.length ? parts.map(esc).join(' · ') : 'once its stage has lasted'
+}
+
+/** Every version as a tree: each Digimon by stage, lines to where it can go, and on each card what it takes to get there. */
+function guideSection(): string {
+  const versions = chart.versions.map((v, n) => {
+    const egg = `egg${v.chart.slice(1)}`
+    const roster = new Set([egg, ...v.ids.filter(id => SPECIES[id])])
+    // Its own Digimon, and any its rules lead to from outside it.
+    for (const id of [...roster]) for (const r of SPECIES[id]!.rules) if (SPECIES[r.to]) roster.add(r.to)
+    const ids = [...roster]
+    const into = (to: string) => ids.flatMap(from => SPECIES[from]!.rules.filter(r => r.to === to).map(r => ({ from, r })))
+    const columns = GUIDE_STAGES.map(stage => {
+      const here = ids.filter(id => SPECIES[id]!.stage === stage)
+      if (!here.length) return ''
+      const cards = here.map(id => {
+        const s = SPECIES[id]!
+        const ways = into(id)
+        const byFrom = [...new Set(ways.map(w => w.from))].map(from => {
+          const src = SPECIES[from]!
+          const rules = ways.filter(w => w.from === from).map(w => w.r)
+          const targets = [...new Set(src.rules.filter(r => !r.jogress).map(r => r.to))]
+          const notes: string[] = []
+          // The house rules: the Rookie's catch-all, and Chaos taking a Virus branch.
+          if (src.stage === 'rookie' && src.rules[src.rules.length - 1]!.to === id) notes.push('or when no other branch fits')
+          if (targets.length > 1 && s.attribute === 'Virus' && targets.find(t => SPECIES[t]?.attribute === 'Virus') === id) {
+            notes.push(`or ${CHAOS_PER_DAY * (GATES[src.stage]?.days ?? 1)}+ chaos in ${esc(src.name)}'s stage`)
+          }
+          return `<li><b>from ${esc(src.name)}</b>${rules.map(r => `<div>${ruleText(r)}</div>`).join('<div class="or">or</div>')}${notes.map(t => `<div class="house">${t}</div>`).join('')}</li>`
+        })
+        // A Digimon no one in this version digivolves into: another version's, met here as a jogress partner.
+        const key = (name: string) => name.replace(/\s+/g, '').toLowerCase()
+        const partnerOf = ids.find(from => SPECIES[from]!.rules.some(r => r.jogress && key(r.jogress) === key(s.name)))
+        if (!byFrom.length && stage !== 'egg') byFrom.push(`<li><b>from another version</b><div>${partnerOf ? `${esc(SPECIES[partnerOf]!.name)}'s jogress partner` : 'a jogress partner, not reached in this one'}</div></li>`)
+        const outside = !v.ids.includes(id) && stage !== 'egg'
+        const to = [...new Set(s.rules.map(r => r.to))].filter(t => roster.has(t))
+        return `<div class="gnode${outside ? ' outside' : ''}" data-id="${id}" data-to="${to.join(',')}">
+          <div class="head">${gridHtml(lcd(view(id as SpeciesId, 'full'), 0, 16))}<div><b>${esc(s.name)}</b><small class="attr ${s.attribute}">${esc(s.attribute)}${outside ? ' · another version' : ''}</small></div></div>
+          ${byFrom.length ? `<ul>${byFrom.join('')}</ul>` : ''}</div>`
+      })
+      return `<div class="gcol"><h4>${GUIDE_LABEL[stage]}</h4><div class="gate">${gateText(stage)}</div>${cards.join('')}</div>`
+    })
+    return `<div class="gver" data-n="${n}"${n ? ' hidden' : ''}><div class="guide"><svg class="edges"></svg>${columns.join('')}</div></div>`
+  })
+  const tabs = chart.versions.map((v, n) => `<button data-n="${n}"${n ? '' : ' class="on"'}>${esc(v.version)}</button>`).join('')
+  return `<section id="guide"><h2>Evolution guide</h2>
+    <div class="legend">
+      <p>Each card says what it takes to digivolve <b>into</b> that Digimon, counted since the pet entered its current stage. A stage must first last as long as its column says (at normal pace; <code>fast</code> a quarter, <code>slow</code> twice). Then the chart's branches are tried in order and the first that fits wins. Hover a card to light its way in and out.</p>
+      <dl>
+        <dt>care mistakes</dt><dd>a cache gone cold and picked up again the same day (one a session a day at most)</dd>
+        <dt>training</dt><dd>turns where Claude used a tool, up to ${TRAINING_PER_DAY} a day</dd>
+        <dt>overfeeds</dt><dd>the context crossing 85% full</dd>
+        <dt>sleep disturbances</dt><dd>turns sent during rest hours</dd>
+        <dt>battles · wins</dt><dd>a check gone red and green again in one turn is a win; one left red, a loss. The win ratio counts the pet's whole life; from 40% short of 80% a daily roll may let it through</dd>
+        <dt>chaos</dt><dd>risky commands (force push, <code>--no-verify</code>, <code>reset --hard</code>, <code>rm -rf</code>) and interrupted turns</dd>
+      </dl>
+    </div>
+    <div class="tabs">${tabs}</div>${versions.join('')}</section>`
+}
+
 const CSS = `
   :root { color-scheme: dark; }
   body { margin: 0; padding: 24px; background: #0e0e10; color: #d0d0d4; font: 14px -apple-system, sans-serif; }
@@ -329,11 +424,59 @@ const CSS = `
   .mon ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; }
   .mon li { margin-top: 4px; } .mon li div { color: #9a9a9e; } .mon .or { color: #555; font-style: italic; }
   .attr.Vaccine { color: #61afef; } .attr.Data { color: #98c379; } .attr.Virus { color: #c678dd; } .attr.Free { color: #e5c07b; }
+  #guide .legend { max-width: 980px; color: #b8b8be; } #guide dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; } #guide dt { color: #e5c07b; } #guide dd { margin: 0; }
+  #guide .tabs { display: flex; gap: 8px; margin: 16px 0; } #guide .tabs button { background: #232326; color: #d0d0d4; border: 1px solid #3a3a40; border-radius: 6px; padding: 6px 14px; font: inherit; cursor: pointer; }
+  #guide .tabs button.on { background: #61afef; color: #0e0e10; border-color: #61afef; }
+  .guide { position: relative; display: flex; gap: 56px; align-items: flex-start; }
+  .guide .edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .guide .edges path { fill: none; stroke: #4a4a52; stroke-width: 1.5; } .guide .edges path.lit { stroke: #61afef; stroke-width: 2.5; }
+  .gcol { display: flex; flex-direction: column; gap: 12px; width: 230px; flex: none; position: relative; }
+  .gcol h4 { margin: 0; color: #fff; } .gcol .gate { color: #8a8a8a; font-size: 12px; margin-top: -8px; min-height: 16px; }
+  .gnode { background: #1c1c1f; border: 1px solid #2a2a2e; border-radius: 8px; padding: 8px; position: relative; z-index: 1; }
+  .gnode.outside { border-style: dashed; opacity: .8; } .gnode.lit { border-color: #61afef; } .gnode.dim { opacity: .35; }
+  .gnode .grid { font-size: 7.5px; line-height: 9px; } .gnode .row, .gnode .row span.q { height: 9px; }
+  .gnode .head { display: flex; gap: 8px; align-items: center; } .gnode .head > div:last-child { display: flex; flex-direction: column; }
+  .gnode ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; } .gnode li { margin-top: 6px; } .gnode li div { color: #b8b8be; }
+  .gnode .or { color: #555; font-style: italic; } .gnode .house { color: #c678dd; } .gnode .k { color: #e5c07b; }
   table { border-collapse: collapse; } td, th { border: 1px solid #333; padding: 6px 10px; vertical-align: top; text-align: left; max-width: 340px; }
 `
 
 // Quadrants are top and bottom halves only (▀ ▄ █), so the grid is one column, two rows.
 const SCRIPT = `
+  // The guide: version tabs, lines from each card to where it can go, and a hover lighting a card's way in and out.
+  const drawEdges = ver => {
+    const box = ver.querySelector('.guide'), svg = ver.querySelector('.edges'), at = box.getBoundingClientRect()
+    svg.innerHTML = ''
+    for (const node of ver.querySelectorAll('.gnode')) for (const to of node.dataset.to.split(',').filter(Boolean)) {
+      const dest = ver.querySelector('.gnode[data-id="' + to + '"]'); if (!dest) continue
+      const a = node.getBoundingClientRect(), b = dest.getBoundingClientRect()
+      const x1 = a.right - at.left, y1 = a.top - at.top + 22, x2 = b.left - at.left, y2 = b.top - at.top + 22, mx = (x1 + x2) / 2
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('d', 'M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2)
+      path.dataset.from = node.dataset.id; path.dataset.to = to
+      svg.append(path)
+    }
+  }
+  for (const b of document.querySelectorAll('#guide .tabs button')) b.onclick = () => {
+    for (const x of document.querySelectorAll('#guide .tabs button')) x.classList.toggle('on', x === b)
+    for (const v of document.querySelectorAll('.gver')) v.hidden = v.dataset.n !== b.dataset.n
+    drawEdges(document.querySelector('.gver[data-n="' + b.dataset.n + '"]'))
+  }
+  for (const ver of document.querySelectorAll('.gver')) {
+    if (!ver.hidden) drawEdges(ver)
+    for (const node of ver.querySelectorAll('.gnode')) {
+      node.onmouseenter = () => {
+        const id = node.dataset.id, near = new Set([id])
+        for (const p of ver.querySelectorAll('.edges path')) { const on = p.dataset.from === id || p.dataset.to === id; p.classList.toggle('lit', on); if (on) { near.add(p.dataset.from); near.add(p.dataset.to) } }
+        for (const n of ver.querySelectorAll('.gnode')) { n.classList.toggle('lit', n === node); n.classList.toggle('dim', !near.has(n.dataset.id)) }
+      }
+      node.onmouseleave = () => {
+        for (const p of ver.querySelectorAll('.edges path')) p.classList.remove('lit')
+        for (const n of ver.querySelectorAll('.gnode')) n.classList.remove('lit', 'dim')
+      }
+    }
+  }
+  addEventListener('resize', () => { for (const v of document.querySelectorAll('.gver')) if (!v.hidden) drawEdges(v) })
   for (const a of document.querySelectorAll('.anim')) {
     const frames = [...a.children]; let i = 0
     setInterval(() => { frames[i].hidden = true; i = (i + 1) % frames.length; frames[i].hidden = false }, +a.dataset.ms)
@@ -343,7 +486,7 @@ const SCRIPT = `
 function html(): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>digi-pet preview</title><style>${CSS}</style></head><body>
   <h1>digi-pet preview</h1><div class="dim">Every grid here is the one the mod draws (hooks/render.ts). Regenerate with <code>bun run preview</code>.</div>
-  ${chartSection()}${lineupSection()}${posesSection()}${spriteSection()}${filmstrip()}${miniSection()}${bandSection(80)}${bandSection(120)}${bandSection(160)}${paneSection(80)}${paneSection(144)}${alertSection()}
+  ${guideSection()}${chartSection()}${lineupSection()}${posesSection()}${spriteSection()}${filmstrip()}${miniSection()}${bandSection(80)}${bandSection(120)}${bandSection(160)}${paneSection(80)}${paneSection(144)}${alertSection()}
   <script>${SCRIPT}</script></body></html>`
 }
 
