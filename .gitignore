@@ -5,3 +5,4 @@ preview/
 .DS_Store
 # Written by Claude Code when the plugin loads from --plugin-dir: lists this machine's MCP tools
 plugin/.claude-plugin/types/
+CLAUDE.md
