@@ -117,6 +117,8 @@ type Ctx = {
   pace: number
   /** `reducedMotion`: the band and the pane drawn still. */
   isStill: boolean
+  /** A `/digi side` flag kept by the conversation a /clear just ended, for the one it starts. */
+  sideOnClear: boolean | undefined
 }
 
 function contextOf(options: Readonly<Record<string, unknown>>): Ctx {
@@ -144,6 +146,7 @@ function contextOf(options: Readonly<Record<string, unknown>>): Ctx {
     isOverfull: false,
     pace: paceOf(options.pace),
     isStill: options.reducedMotion === true,
+    sideOnClear: undefined,
   }
 }
 
@@ -484,26 +487,31 @@ async function jogress($: EngineInterface, ctx: Ctx): Promise<string> {
   return text
 }
 
+/** A conversation's own state: its clock, project, side flag, the pet as kept, and the tick. */
+async function begin($: EngineInterface, ctx: Ctx, cwd: string) {
+  const zone = await $.process.run(['date', '+%z']).catch(() => null)
+  const offsetMin = parseOffset(zone?.stdout ?? '') ?? -new Date().getTimezoneOffset()
+  const project = cwd.replace(/\/$/, '').split('/').pop() || cwd
+  const ttl = Number(await $.store.get('debugTtlMinutes')) || ctx.ttlMinutes
+  await update($, local, () => ({ offsetMin, project, ttlMs: ttl * MINUTE }))
+  const home = (await $.env.get('HOME').catch(() => undefined)) ?? ''
+  const id = await $.session.id()
+  const keptSide = await $.store.get(`side:${id}`)
+  const isSide = typeof keptSide === 'boolean' ? keptSide : isSidePath(cwd, ctx.sidePaths, home)
+  await update($, feeding, f => ({ ...f, isSide }))
+  await grow($, ctx)
+  const onRecord = (await totals(storeOf($))).careMistakes
+  await update($, mistakes, () => onRecord)
+  startTick($, ctx, ttl * MINUTE)
+  await onTick($, ctx)
+}
+
 export const register: Register = (on, options) => {
   const ctx = contextOf(options)
 
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'digi', description: 'Your Digimon V-Pet: its hunger, breaks, side sessions and a preview of any species', argumentHint: USAGE })
-    const zone = await $.process.run(['date', '+%z']).catch(() => null)
-    const offsetMin = parseOffset(zone?.stdout ?? '') ?? -new Date().getTimezoneOffset()
-    const project = e.cwd.replace(/\/$/, '').split('/').pop() || e.cwd
-    const ttl = Number(await $.store.get('debugTtlMinutes')) || ctx.ttlMinutes
-    await update($, local, () => ({ offsetMin, project, ttlMs: ttl * MINUTE }))
-    const home = (await $.env.get('HOME').catch(() => undefined)) ?? ''
-    const id = await $.session.id()
-    const keptSide = await $.store.get(`side:${id}`)
-    const isSide = typeof keptSide === 'boolean' ? keptSide : isSidePath(e.cwd, ctx.sidePaths, home)
-    await update($, feeding, f => ({ ...f, isSide }))
-    await grow($, ctx)
-    const onRecord = (await totals(storeOf($))).careMistakes
-    await update($, mistakes, () => onRecord)
-    startTick($, ctx, ttl * MINUTE)
-    await onTick($, ctx)
+    await begin($, ctx, e.cwd)
     return next(e)
   })
 
@@ -511,7 +519,19 @@ export const register: Register = (on, options) => {
     // A /clear starts a conversation with an empty cache; the side flag stays with the terminal.
     if (e.reason === 'clear') {
       ctx.isMistakePending = false
+      const keptSide = await $.store.get(`side:${e.sessionId}`)
+      ctx.sideOnClear = typeof keptSide === 'boolean' ? keptSide : undefined
       await update($, feeding, f => ({ ...EMPTY, isSide: f.isSide }))
+    }
+    return next(e)
+  })
+
+  // A /clear raises no session.start, and its conversation starts with no state: set it up again, or the band draws an egg until the next tick.
+  on('classic.SessionStart', async ($, e, next) => {
+    if (e.source === 'clear') {
+      if (ctx.sideOnClear !== undefined) await $.store.set(`side:${await $.session.id()}`, ctx.sideOnClear)
+      ctx.sideOnClear = undefined
+      await begin($, ctx, e.cwd)
     }
     return next(e)
   })

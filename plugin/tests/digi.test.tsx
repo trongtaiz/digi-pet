@@ -22,6 +22,8 @@ let status: (string | undefined)[] = []
 let toolAnswer: (e: { tool: string; command?: string }) => { result: string; text: string } = () => ({ result: 'out', text: 'out' })
 // The plugin's store, kept here so a test can read what it wrote.
 let kept = new Map<string, unknown>()
+// The session's id: a /clear goes on under another.
+let sessionId = 's1'
 
 function host(on: On, now: number, stored: Record<string, unknown> = {}) {
   toasts = []
@@ -31,6 +33,7 @@ function host(on: On, now: number, stored: Record<string, unknown> = {}) {
   const clock = mock.clock(on, { now })
   // A Botamon unless the test keeps another pet (or none: an egg).
   kept = new Map(Object.entries({ pet: { species: 'bota' }, ...stored }))
+  sessionId = 's1'
   on('store.get', ($, e) => ({ value: kept.get(e.key) }))
   on('store.set', ($, e) => {
     kept.set(e.key, e.value)
@@ -42,7 +45,7 @@ function host(on: On, now: number, stored: Record<string, unknown> = {}) {
   })
   on('store.keys', () => ({ value: [...kept.keys()] }))
   mock.env(on, { HOME: '/Users/me' })
-  on('session.id', () => ({ value: 's1' }))
+  on('session.id', () => ({ value: sessionId }))
   on('command.register', ($, e) => ({ value: { command: e.name } }))
   on('process.run', ($, e) => {
     if (e.argv[0] === 'osascript') notes.push([...e.argv])
@@ -577,4 +580,32 @@ test('a pat does not cure a pet sick from a care mistake', async ($, on) => {
   const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...BAND })
   expect(JSON.stringify(await ui.drawn({ in: 'band-bota-loud' }))).toContain('I got sick')
   await ui.unmount()
+})
+
+test('after /clear the pet is itself at once, and a side session stays one', async ($, on) => {
+  const base = { turns: 30, activeDays: 1, careMistakes: 0, training: 10, overfeed: 0, sleepDisturbances: 0, battles: 0, wins: 0 }
+  host(on, at('09:00'), { pet: { species: 'koro', enteredDay: '2026-10-04', base, log: [{ id: 'koro', day: '2026-10-04' }] } })
+  // The session's state, as the engine keeps it: a /clear starts the new conversation with none, and raises no session.start.
+  let state = new Map<string, unknown>()
+  on('state.get', ($, e) => ({ value: { value: state.get(e.key), version: 0 } }))
+  on('state.set', ($, e) => {
+    state.set(e.key, e.value)
+    return { value: { isSet: true as const, version: 0 } }
+  })
+  on('session.end', ($, e) => {
+    state = new Map()
+    sessionId = 's2'
+    return { sessionId: e.sessionId }
+  })
+  on('classic.SessionStart', () => ({}))
+  stepWith(on, () => HIT)
+  await start($)
+  await $.command.run({ ...RUN, command: 'digi', args: 'side' })
+
+  await $.session.end({ reason: 'clear', sessionId: 's1' } as never)
+  await $.classic.SessionStart({ source: 'clear' } as never)
+  const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...BAND })
+  expect(((await ui.findAll({ type: 'Client' })) as { key?: string }[])[0]!.key).toBe('band-koro-idle')
+  await ui.unmount()
+  expect((await $.command.run({ ...RUN, command: 'digi', args: '' })).text).toContain('side session: yes')
 })
