@@ -9,6 +9,8 @@ look after it.
 
 ![A Ver.1 line from egg to Mega: Digitama, Botamon, Koromon, Agumon, Greymon, MetalGreymon, BlitzGreymon](docs/images/lineup.png)
 
+Every Digimon and evolution chart of the five versions: [Digitama Hatchery, Digital Monster Color](https://humulos.com/digimon/dmc/).
+
 ## Install
 
 ```
