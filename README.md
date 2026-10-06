@@ -70,7 +70,8 @@ get hungry when the cache is not worth keeping warm:
   `/digi wake` it, which keeps it up until that window ends;
 - on a **break** (`/digi break 90m`, `/digi break until 15:30`) or after
   `/digi sleep`, until your next prompt;
-- in a **side session** (`/digi side`, or a folder listed in `sidePaths`);
+- in a **side session** (`/digi side`, or a folder listed in `sidePaths`),
+  where it still shows when the cache goes cold (`cache 42m left (cold at 10:00)`);
 - when the context is under `minContextTokens`, since a small cache is cheap to
   rebuild.
 

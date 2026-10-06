@@ -174,8 +174,11 @@ async function bump($: EngineInterface, ctx: Ctx, delta: Partial<Counters>) {
 
 function quietText(q: Quiet | null, f: DigiFeeding, t: number, cfg: Config): string | undefined {
   switch (q) {
-    case 'side':
-      return 'side session · not hungry'
+    case 'side': {
+      // Not hungry, but when the cache goes cold is still worth knowing.
+      const left = minutesLeft(f, t, cfg)
+      return `side session · ${left > 0 ? `cache ${Math.ceil(left)}m left (cold at ${clockText(f.lastFedAt! + cfg.ttlMs, cfg.offsetMin)})` : 'cache cold'}`
+    }
     case 'asleep':
       return '💤 asleep until your next prompt'
     case 'break':
