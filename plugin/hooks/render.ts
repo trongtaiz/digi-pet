@@ -404,7 +404,7 @@ function screenBand(v: PetView, t: number, width: number, isDevice: boolean): Gr
   wrap(workSpeech(v), right - 3)
     .slice(0, 2)
     .forEach((line, i) => putRight(g, right, 3 + i, [[`${i === 0 ? '“' : ''}${line}`, { c: color }]]))
-  putRight(g, right, 6, hungerParts(v))
+  hungerRows(v, right).forEach((row, i) => putRight(g, right, 6 + i, row))
   return g
 }
 
@@ -452,19 +452,33 @@ function loudBand(v: PetView, t: number, width: number): Grid {
     .slice(0, 3)
     .forEach((line, i) => putRight(g, right, 3 + i, [[`${i === 0 ? '“' : ''}${line}`, { c: color, b: v.hunger === 'starving' && !v.evolving }]]))
   if (!v.evolving) {
-    putRight(g, right, 7, hungerParts(v))
+    hungerRows(v, right).forEach((row, i) => putRight(g, right, 7 + i, row))
     if (v.hunger === 'hungry' || v.hunger === 'starving') putRight(g, right, 8, [['Prompt to feed · /digi sleep if done', { c: DIM, d: true }]])
   }
   return g
 }
 
-/** `Hunger ♥♥♡♡  12m left`, or why the pet is not minding the cache. */
-function hungerParts(v: PetView): [string, Style][] {
-  if (v.quiet) return [[v.quiet, { c: DIM }]]
+/** `Hunger ♥♥♡♡  12m left`, or why the pet is not minding the cache: in `max` rows of `room` at most, so it never runs into the screen. */
+function hungerRows(v: PetView, room: number, max = 2): [string, Style][][] {
+  if (v.quiet) return quietRows(v.quiet, room, max).map(row => [[row, { c: DIM }]])
   return [
-    [`Hunger ${hearts(v)}`, { c: HUNGER_COLOR[v.hunger] }],
-    [v.hunger === 'cold' ? '  cache cold' : `  ${Math.ceil(v.minutesLeft)}m left`, { c: DIM }],
+    [
+      [`Hunger ${hearts(v)}`, { c: HUNGER_COLOR[v.hunger] }],
+      [v.hunger === 'cold' ? '  cache cold' : `  ${Math.ceil(v.minutesLeft)}m left`, { c: DIM }],
+    ],
   ]
+}
+
+/** A quiet line in `max` rows of `room`: broken at its ` · ` first, its leading parts dropped when the rows cannot hold the rest. */
+function quietRows(text: string, room: number, max: number): string[] {
+  const rowsOf = (parts: string[]) =>
+    parts.reduce<string[]>((rows, part) => {
+      const last = rows[rows.length - 1]
+      return last !== undefined && textWidth(`${last} · ${part}`) <= room ? [...rows.slice(0, -1), `${last} · ${part}`] : [...rows, ...wrap(part, room)]
+    }, [])
+  let parts = text.split(' · ')
+  while (parts.length > 1 && rowsOf(parts).length > max) parts = parts.slice(1)
+  return rowsOf(parts).slice(0, max)
 }
 
 /** Runs written so the last ends at column `right`: the text leans on the pet's screen. */
@@ -617,7 +631,7 @@ export function miniBand(v: PetView, t: number, width: number): Grid {
   const say = isLoud(v) ? (speech(v) ?? '') : workSpeech(v)
   const color = isLoud(v) ? HUNGER_COLOR[v.hunger] : v.act === 'ask' ? '#ff5f57' : v.act === 'tool' ? '#e5c07b' : '#61afef'
   if (say) putRight(g, right, 1, [[`“${say.length > right - 2 ? `${say.slice(0, right - 3)}…` : say}`, { c: color }]])
-  putRight(g, right, 3, hungerParts(v))
+  putRight(g, right, 3, hungerRows(v, right, 1)[0]!)
   return g
 }
 

@@ -39,6 +39,19 @@ test('a pet with no stats yet draws empty bars, not full ones', () => {
   for (const r of rows) expect(r).not.toContain('█')
 })
 
+test('a long quiet line wraps beside the Digivice and never runs into it', () => {
+  const quiet = { ...view, quiet: 'side session · cache 60m left (cold at 11:49)' }
+  for (const [width, rows] of [[72, 9], [72, 8], [54, 9]] as const) {
+    const g = band(quiet, 0, width, rows)
+    const plain = band({ ...view, quiet: 'side session' }, 0, width, rows)
+    // The screen's columns (in its Digivice with nine rows) are as they are with a short line.
+    const device = (x: typeof g) => x.map(r => r.slice(width - (rows === 9 ? 29 : 25)).map(c => c.ch).join(''))
+    expect(device(g)).toEqual(device(plain))
+    const text = g.map(r => r.map(c => c.ch).join('')).join('\n')
+    expect(`${width}: ${text.includes('11:49)')}`).toBe(`${width}: true`)
+  }
+})
+
 /** The first frame a fireball lands (its burst shows), in a fight of `act` at `width`. */
 function firstHit(width: number, act: 'think' | 'tool', fight = { open: 0, won: 0, flash: false }): number {
   for (let t = 0; t < 60; t++) if (JSON.stringify(arena(t, width, act, fight)).includes('#f1c40f')) return t
