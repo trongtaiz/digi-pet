@@ -455,7 +455,7 @@ test('an overfeed is the context crossing 85%, once until it has dropped again',
   expect(day.overfeeds).toBe(2)
 })
 
-test('/digi pane draws the growth: stats, the way to the next stage, and the evolution so far', async ($, on) => {
+test('/digi pane draws the growth: stats, the way to the next stage, its branches, and the evolution so far', async ($, on) => {
   const clock = host(on, at('09:00'), yesterday({ turns: 24, toolTurns: 10, research: 40, prompts: 20, battlesWon: 2, battlesLost: 1 }))
   stepWith(on, () => HIT)
   await start($)
@@ -466,6 +466,8 @@ test('/digi pane draws the growth: stats, the way to the next stage, and the evo
   const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...pane } as never)
   const drawn = JSON.stringify(await ui.drawn({ in: 'pane' }))
   for (const text of ['Koromon', 'Baby II', 'INT', 'SYN', 'Next', 'turns 0/100', 'Evolution: Koromon (2026-10-05)']) expect(drawn).toContain(text)
+  // Koromon's two ways on: Agumon on few care mistakes, Betamon on many or on Chaos.
+  for (const text of ['Branches', 'Agumon', 'care mistakes 0 (≤3) ✓', 'Betamon', 'care mistakes 0/4', 'chaos 0/10']) expect(drawn).toContain(text)
   await ui.unmount()
 })
 

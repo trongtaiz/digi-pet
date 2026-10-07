@@ -43,8 +43,8 @@ shows follows what Claude is doing:
 
 With little room (a long draft in the prompt) the band shrinks to the bare
 screen, then a half-size one, then a single line. `/digi pane` opens a side
-pane with the full picture: the Digivice, its six stats as bars and its
-evolution so far.
+pane with the full picture: the Digivice, its six stats as bars, the branches
+its stage can take and its evolution so far.
 
 ![The /digi pane: Agumon in its Digivice with hunger, care mistakes, battles, trophies, progress to Champion, six stat bars and its evolution so far](docs/images/pane.png)
 
@@ -181,8 +181,11 @@ Two house rules sit on top of the chart:
 - **A Rookie always digivolves.** If no branch fits, it takes the chart's
   catch-all, as the device does.
 
-`/digi` shows the counts and what the next stage still needs. `/digi log`
-lists every digivolution so far.
+`/digi` shows the counts and what the next stage still needs. `/digi pane`
+lists the branches: each Digimon the stage can become, the counts its rule asks
+for (ticked when met), `▸` on the one the counts lead to now, and the chaos
+that would send it down the Virus branch. `/digi log` lists every digivolution
+so far.
 
 ![Agumon digivolving: it flashes to a silhouette, then Greymon appears with sparkles](docs/images/evolving.gif)
 
@@ -197,7 +200,7 @@ five DMC version eggs at random, and each egg leads to a different chart.
 | Command | |
 |---|---|
 | `/digi` or `/digi stats` | Stats, hunger, and what the next evolution needs |
-| `/digi pane` | Open the side pane: the Digivice, stats and evolution log |
+| `/digi pane` | Open the side pane: the Digivice, stats, branches and evolution log |
 | `/digi log` | Evolution history |
 | `/digi pet` | Pat it (the first three a day raise SYN) |
 | `/digi jogress` | Fuse with a partner, where the chart allows |

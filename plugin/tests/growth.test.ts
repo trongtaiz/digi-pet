@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, eggOf, countsOf, evolveTo, jogressOf, minus, progressOf, rollOf, statsOf } from '../hooks/growth'
+import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, eggOf, countsOf, evolveTo, forecastOf, jogressOf, minus, progressOf, rollOf, statsOf } from '../hooks/growth'
 import type { Counts, Rule } from '../hooks/growth'
 import { ZERO } from '../hooks/ledger'
 import type { Counters } from '../hooks/ledger'
@@ -54,6 +54,26 @@ test('every branch from the egg can be taken at every pace: some rule for it is 
       expect(seen.has(id)).toBe(true)
     }
   }
+})
+
+test('the forecast: each branch by its closest rule, where it leads now, the catch-all and the chaos that turns it Virus', () => {
+  const f = forecastOf('beta', { ...ZERO_COUNTS, activeDays: 1, training: 4 }, SPECIES)!
+  expect(f.branches.map(b => b.to)).toEqual(['airdra', 'seadra', 'devi', 'mera', 'nume'])
+  // No gate open yet, but Meramon is where the counts lead.
+  expect(f.branches.filter(b => b.isNow).map(b => b.to)).toEqual(['mera'])
+  expect(f.branches.find(b => b.to === 'devi')!.needs).toEqual([
+    { key: 'careMistakes', have: 0, min: 0, max: 3, isMet: true },
+    { key: 'training', have: 4, min: 48, max: null, isMet: false },
+  ])
+  // Numemon has four rules: the closest of them stands for it. It is the Rookie's catch-all.
+  const nume = f.branches.find(b => b.to === 'nume')!
+  expect(nume.needs.filter(n => !n.isMet).map(n => n.key)).toEqual(['careMistakes'])
+  expect(f.branches.filter(b => b.isCatchAll).map(b => b.to)).toEqual(['nume'])
+  expect(f.virus).toEqual({ to: 'devi', have: 0, need: CHAOS_PER_DAY * 5 })
+  // Enough chaos and the Virus branch is where it leads.
+  expect(forecastOf('koro', { ...ZERO_COUNTS, chaos: 10 }, SPECIES)!.branches.filter(b => b.isNow).map(b => b.to)).toEqual(['beta'])
+  // One way on is no choice: no forecast.
+  expect(forecastOf('bota', ZERO_COUNTS, SPECIES)).toBe(null)
 })
 
 test('Chaos turns a branch Virus; the win ratio is every battle ever, and short of 80% a daily roll may still let it through', () => {

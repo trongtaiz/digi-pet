@@ -4,6 +4,7 @@ import { blank, canvas, cells, draw, plot, put, textWidth } from './cells'
 import type { Canvas, Grid, Style } from './cells'
 import { hasPose, pixels } from './sprite'
 import type { Pose, Sprite } from './sprite'
+import type { DigiForecast } from '../types'
 
 export type Hunger = 'full' | 'peckish' | 'hungry' | 'starving' | 'cold'
 export type Mood = 'normal' | 'asleep' | 'sick' | 'eating' | 'happy'
@@ -45,6 +46,8 @@ export type StatName = (typeof STAT_NAMES)[number]
 /** What the pane adds: the stat sheet, the record and the evolution log. */
 export type PaneView = PetView & {
   careMistakes: number
+  /** Risky moves this stage; enough of them send the pet down the Virus branch. */
+  chaos?: number
   /** More lines under the record: today's turns, the last cache hit. */
   facts?: string[]
   stats?: Record<StatName, number>
@@ -54,6 +57,7 @@ export type PaneView = PetView & {
   weight?: number
   ageDays?: number
   log?: { name: string; day: string }[]
+  forecast?: DigiForecast | null
 }
 
 const STAGES: Record<string, string> = {
@@ -505,14 +509,17 @@ export function pane(v: PaneView, t: number, width: number): Grid {
   const statRows = v.stats ? statLines(v.stats, width - 2) : []
   const logLines = v.log?.length ? wrap(`Evolution: ${v.log.map(e => `${e.name} (${e.day})`).join(' → ')}`, width - 2) : []
   const factLines = (v.facts ?? []).flatMap(fact => wrap(fact, width - 2))
-  const h = (side ? Math.max(screen.length, info.length) : screen.length + 1 + info.length) + 1 + statRows.length + 1 + logLines.length + factLines.length
+  const forecastRows = v.forecast ? forecastLines(v.forecast, width - 2) : []
+  const h =
+    (side ? Math.max(screen.length, info.length + 1) : screen.length + 1 + info.length) + 1 + statRows.length + (forecastRows.length ? 1 + forecastRows.length : 0) + 1 + logLines.length + factLines.length
   const g = blank(width, h)
   paste(g, screen, 1, 0)
   const infoX = side ? 40 : 1
   const infoY = side ? 1 : screen.length + 1
   info.forEach(([text, style], i) => put(g, infoX, infoY + i, text, style))
   let y = (side ? Math.max(screen.length, info.length + 1) : infoY + info.length) + 1
-  for (const row of statRows) {
+  // The stat bars, then a row apart the branches.
+  for (const row of [...statRows, ...(forecastRows.length ? [[], ...forecastRows] : [])]) {
     let x = 1
     for (const [text, style] of row) {
       put(g, x, y, text, style)
@@ -536,6 +543,7 @@ function paneInfo(v: PaneView): [string, Style][] {
       : [`Hunger  ${hearts(v)} ${v.mood === 'asleep' ? 'asleep' : v.hunger === 'cold' ? 'cache cold' : `${Math.ceil(v.minutesLeft)}m left`}`, { c: HUNGER_COLOR[v.hunger] }],
     [`Care mistakes  ${v.careMistakes}`, { c: v.careMistakes ? '#e5c07b' : DIM }],
   ]
+  if (v.chaos !== undefined) lines.push([`Chaos  ${v.chaos} this stage`, { c: v.chaos ? '#e5c07b' : DIM }])
   if (v.battles) {
     const fought = v.battles.won + v.battles.lost
     lines.push([`Battles  ${v.battles.won}W ${v.battles.lost}L${fought ? ` (${Math.round((100 * v.battles.won) / fought)}%)` : ''}`, { c: DIM }])
@@ -543,6 +551,62 @@ function paneInfo(v: PaneView): [string, Style][] {
   if (v.trophies !== undefined) lines.push([`Trophies  ${v.trophies}`, { c: DIM }])
   if (v.next !== undefined) lines.push([v.next ? `Next  ${v.next.label} ${bar(v.next.ratio, 8)}` : 'Fully digivolved', { c: DIM }])
   return lines
+}
+
+const NEED_LABEL: Record<string, string> = {
+  careMistakes: 'care mistakes',
+  training: 'training',
+  overfeed: 'overfeed',
+  sleepDisturbances: 'sleep disturbances',
+  battles: 'battles',
+  winRatio: 'win',
+}
+const MET = '#7bd88f'
+
+/** A requirement as the pane says it: `training 4/48`, `care mistakes 0 (≤3)`, `training 4 (8–31)`. */
+function needText(n: DigiForecast['branches'][number]['needs'][number]): string {
+  const unit = n.key === 'winRatio' ? '%' : ''
+  const range = n.max === null ? `/${n.min}${unit}` : n.min === 0 ? ` (≤${n.max}${unit})` : ` (${n.min}–${n.max}${unit})`
+  return `${NEED_LABEL[n.key] ?? n.key} ${n.have}${unit}${range}${n.isMet ? ' ✓' : ''}`
+}
+
+/** The branches under the stats: one per way on, `▸` on the one the counts lead to now, the Virus branch's Chaos last. */
+function forecastLines(f: DigiForecast, width: number): [string, Style][][] {
+  const nameStyle = (attribute: string): Style => ({ c: ATTRIBUTE_COLOR[attribute as Attribute] ?? TEXT, b: true })
+  const rows: [string, Style][][] = [[['Branches', { c: TEXT, b: true }], ['  ▸ where it goes now', { c: DIM }]]]
+  const line = (lead: [string, Style][], units: [string, Style][]) => {
+    let row = [...lead]
+    let x = lead.reduce((w, [text]) => w + textWidth(text), 0)
+    units.forEach(([text, style], i) => {
+      const sep = i ? ' · ' : '  '
+      if (i && x + textWidth(sep + text) > width) {
+        rows.push(row)
+        row = [['    ', {}]]
+        x = 4
+      } else {
+        row.push([sep, { c: DIM }])
+        x += textWidth(sep)
+      }
+      row.push([text, style])
+      x += textWidth(text)
+    })
+    rows.push(row)
+  }
+  for (const b of f.branches) {
+    const units: [string, Style][] = b.needs.map(n => [needText(n), { c: n.isMet ? MET : DIM }])
+    if (b.isCatchAll) units.push(['if none fits', { c: DIM }])
+    line([[b.isNow ? '▸ ' : '  ', { c: TEXT, b: true }], [b.name, nameStyle(b.attribute)]], units)
+  }
+  if (f.virus) {
+    line(
+      [['  ', {}], [f.virus.name, nameStyle('Virus')]],
+      [
+        [`chaos ${f.virus.have}/${f.virus.need}`, { c: f.virus.have ? '#e5c07b' : DIM }],
+        ['overrides the rest', { c: DIM }],
+      ],
+    )
+  }
+  return rows
 }
 
 const STAT_COLOR: Record<StatName, string> = {

@@ -40,6 +40,14 @@ export type DigiGrowth = {
   /** Every trophy ever, and the win ratio over every battle ever. */
   trophies: number
   winRatio: number
+  /** The stage's ways on (`growth.ts` `forecastOf`, with names); null where there is no choice. */
+  forecast: DigiForecast | null
+}
+
+/** Each branch the stage can take: its closest rule's requirements as they stand, and the Chaos that turns it Virus. */
+export type DigiForecast = {
+  branches: { name: string; attribute: string; needs: { key: string; have: number; min: number; max: number | null; isMet: boolean }[]; isNow: boolean; isCatchAll: boolean }[]
+  virus: { name: string; have: number; need: number } | null
 }
 
 /** The fight in the band: checks red right now, battles won this stage, and whether one was won just now. */

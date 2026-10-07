@@ -29,7 +29,7 @@ export function allyViews(allies: readonly AllyJson[]): AllyView[] {
   return allies.map(({ species, ...rest }) => ({ ...rest, sprite: spriteOf(species) }))
 }
 
-export type PaneJson = ViewJson & { careMistakes: number; facts: string[] } & Pick<PaneView, 'stats' | 'battles' | 'ageDays' | 'log' | 'trophies' | 'weight'>
+export type PaneJson = ViewJson & { careMistakes: number; facts: string[] } & Pick<PaneView, 'stats' | 'battles' | 'ageDays' | 'log' | 'trophies' | 'weight' | 'chaos' | 'forecast'>
 
 export function spriteOf(id: string): Sprite {
   return (SPRITES as Record<string, Sprite>)[id] ?? SPRITES.bota
@@ -51,5 +51,5 @@ export function petView(v: ViewJson, t: number): PetView {
 }
 
 export function paneView(v: PaneJson, t: number): PaneView {
-  return { ...petView(v, t), careMistakes: v.careMistakes, facts: v.facts, stats: v.stats, battles: v.battles, ageDays: v.ageDays, log: v.log, trophies: v.trophies, weight: v.weight }
+  return { ...petView(v, t), careMistakes: v.careMistakes, facts: v.facts, stats: v.stats, battles: v.battles, ageDays: v.ageDays, log: v.log, trophies: v.trophies, weight: v.weight, chaos: v.chaos, forecast: v.forecast }
 }

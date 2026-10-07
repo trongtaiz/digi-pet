@@ -7,12 +7,12 @@
 import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, Register, RenderElement } from 'claude-code'
 
-import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiGrowth, DigiMood, DigiSim } from '../types'
+import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiForecast, DigiGrowth, DigiMood, DigiSim } from '../types'
 import { allyOf, busyLabel, oneLine, toolLabel, toolRun } from './activity'
 import { segments } from './cells'
 import type { Grid } from './cells'
-import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
-import type { Context, Counts, Pet } from './growth'
+import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, forecastOf, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
+import type { Context, Counts, Forecast, Pet } from './growth'
 import {
   clockText,
   dayOf,
@@ -509,6 +509,16 @@ function growthOf(pet: Pet, days: Ledger, all: Counts, life: Context): DigiGrowt
     },
     trophies: all.trophies,
     winRatio: winRatio(all),
+    forecast: forecastJson(forecastOf(pet.species, stage, SPECIES, life)),
+  }
+}
+
+/** The forecast with each branch's name and attribute, for the pane. */
+function forecastJson(f: Forecast | null): DigiForecast | null {
+  if (!f) return null
+  return {
+    branches: f.branches.map(({ to, ...b }) => ({ ...b, name: spriteOf(to).name, attribute: SPECIES[to]?.attribute ?? '' })),
+    virus: f.virus && { name: spriteOf(f.virus.to).name, have: f.virus.have, need: f.virus.need },
   }
 }
 
@@ -854,7 +864,7 @@ export const register: Register = (on, options) => {
       ...(await viewOf($, ctx, t)),
       careMistakes: await read($, mistakes),
       facts: [...(await recordLines($, ctx)), ...(await read($, facts))],
-      ...(g ? { stats: g.stats, battles: g.battles, ageDays: g.ageDays, log: g.log, trophies: g.trophies } : {}),
+      ...(g ? { stats: g.stats, battles: g.battles, ageDays: g.ageDays, log: g.log, trophies: g.trophies, chaos: g.stage.chaos, forecast: g.forecast } : {}),
       weight: weightOf((await read($, feeding)).contextTokens),
     }
     if (!('Client' in ui)) return <Text>{`${spriteOf(view.species).name} · ${view.quiet ?? view.hunger}`}</Text>

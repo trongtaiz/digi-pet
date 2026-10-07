@@ -173,19 +173,66 @@ function isGateOpen(stage: string, c: Counts, pace: number): boolean {
 /** What the pet digivolves into now, given its stage's counts; null while its stage lasts or no rule lets it. */
 export function evolveTo(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { life: c, day: '', pace: 1 }): string | null {
   const s = species[id]
-  const rules = s?.rules.filter(r => !r.jogress) ?? []
-  if (!s || !rules.length || !isGateOpen(s.stage, c, ctx.pace)) return null
-  const targets = [...new Set(rules.map(r => r.to))]
+  if (!s || !s.rules.some(r => !r.jogress) || !isGateOpen(s.stage, c, ctx.pace)) return null
+  return branchOf(id, c, species, ctx)
+}
+
+/** Where the stage's counts lead, its gate aside: the Virus branch on enough Chaos, else the first rule met, else a Rookie's catch-all. */
+function branchOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context): string | null {
+  const s = species[id]!
+  const rules = s.rules.filter(r => !r.jogress)
   // A reckless stage takes the Virus branch, where it has one.
-  if (targets.length > 1 && c.chaos >= CHAOS_PER_DAY * scaled(GATES[s.stage]!.days ?? 1, ctx.pace)) {
-    const virus = targets.find(to => species[to]?.attribute === 'Virus')
-    if (virus) return virus
-  }
+  const virus = virusOf(s, species)
+  if (virus && c.chaos >= chaosLimit(s, ctx.pace)) return virus
   const roll = rollOf(id, ctx.day)
   const rule = rules.find(r => isMet(r, c, ctx, roll))
   if (rule) return rule.to
   // A Rookie no rule takes still digivolves, as on the device: into its chart's catch-all, listed last.
   return s.stage === 'rookie' ? rules[rules.length - 1]!.to : null
+}
+
+/** The Virus branch Chaos can send a stage down: only where it has a choice. */
+function virusOf(s: SpeciesRules, species: Record<string, SpeciesRules>): string | null {
+  const targets = [...new Set(s.rules.filter(r => !r.jogress).map(r => r.to))]
+  return targets.length > 1 ? (targets.find(to => species[to]?.attribute === 'Virus') ?? null) : null
+}
+
+/** The Chaos that turns a stage Virus: CHAOS_PER_DAY for each day it lasts. */
+function chaosLimit(s: SpeciesRules, pace: number): number {
+  return CHAOS_PER_DAY * scaled(GATES[s.stage]?.days ?? 1, pace)
+}
+
+/** A rule's requirement as it stands: the count, the range asked, and whether the count is in it. */
+export type Need = { key: Requirement; have: number; min: number; max: number | null; isMet: boolean }
+/** A way on from the stage: where it leads, its closest rule, whether the counts lead there now, and whether it is a Rookie's catch-all. */
+export type Branch = { to: string; needs: Need[]; isNow: boolean; isCatchAll: boolean }
+export type Forecast = { branches: Branch[]; virus: { to: string; have: number; need: number } | null }
+
+/** The stage's ways on, as the pane shows them; null where there is no choice to make. */
+export function forecastOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { life: c, day: '', pace: 1 }): Forecast | null {
+  const s = species[id]
+  const rules = s?.rules.filter(r => !r.jogress) ?? []
+  const targets = [...new Set(rules.map(r => r.to))]
+  if (!s || targets.length < 2) return null
+  const values: Record<Requirement, number> = { ...c, winRatio: winRatio(ctx.life) }
+  const needsOf = (r: Rule): Need[] =>
+    REQUIREMENTS.filter(k => r[k]).map(k => {
+      const { min, max } = r[k]!
+      return { key: k, have: values[k], min, max, isMet: values[k] >= min && (max === null || values[k] <= max) }
+    })
+  const unmet = (needs: Need[]) => needs.filter(n => !n.isMet).length
+  const now = branchOf(id, c, species, ctx)
+  const virus = virusOf(s, species)
+  return {
+    branches: targets.map(to => ({
+      to,
+      // A target several rules lead to stands by the one closest to met.
+      needs: rules.filter(r => r.to === to).map(needsOf).reduce((best, n) => (unmet(n) < unmet(best) ? n : best)),
+      isNow: to === now,
+      isCatchAll: s.stage === 'rookie' && to === rules[rules.length - 1]!.to,
+    })),
+    virus: virus ? { to: virus, have: c.chaos, need: chaosLimit(s, ctx.pace) } : null,
+  }
 }
 
 /** The jogress a Mega can make now (`/digi jogress`): its partner and what they become, or why not. */

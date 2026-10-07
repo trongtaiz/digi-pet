@@ -39,6 +39,28 @@ test('a pet with no stats yet draws empty bars, not full ones', () => {
   for (const r of rows) expect(r).not.toContain('█')
 })
 
+test("the pane shows this stage's chaos under the care mistakes", () => {
+  const rows = pane({ ...view, chaos: 3 }, 0, 80).map(r => r.map(c => c.ch).join(''))
+  expect(rows.some(r => r.includes('Chaos  3 this stage'))).toBe(true)
+})
+
+test('the pane forecasts the branches: met in green with a tick, the one it leads to marked', () => {
+  const forecast = {
+    branches: [
+      { name: 'Devimon', attribute: 'Virus', needs: [{ key: 'training', have: 4, min: 48, max: null, isMet: false }], isNow: false, isCatchAll: false },
+      { name: 'Meramon', attribute: 'Data', needs: [{ key: 'careMistakes', have: 0, min: 0, max: 3, isMet: true }], isNow: true, isCatchAll: false },
+      { name: 'Numemon', attribute: 'Virus', needs: [{ key: 'training', have: 4, min: 8, max: 31, isMet: false }], isNow: false, isCatchAll: true },
+    ],
+    virus: { name: 'Devimon', have: 2, need: 25 },
+  }
+  const rows = pane({ ...view, forecast }, 0, 80).map(r => r.map(c => c.ch).join(''))
+  const text = rows.join('\n')
+  expect(text).toContain('Devimon  training 4/48')
+  expect(text).toContain('▸ Meramon  care mistakes 0 (≤3) ✓')
+  expect(text).toContain('Numemon  training 4 (8–31) · if none fits')
+  expect(text).toContain('Devimon  chaos 2/25')
+})
+
 test('a long quiet line wraps beside the Digivice and never runs into it', () => {
   const quiet = { ...view, quiet: 'side session · cache 60m left (cold at 11:49)' }
   for (const [width, rows] of [[72, 9], [72, 8], [54, 9]] as const) {
