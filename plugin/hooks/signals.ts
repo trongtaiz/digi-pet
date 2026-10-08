@@ -19,14 +19,18 @@ const FAILED =
 const GIT = String.raw`\bgit(?:\s+(?:-[Cc]\s+\S+|--[\w-]+(?:=\S+)?))*\s+`
 const COMMIT = new RegExp(String.raw`${GIT}commit\b`)
 /** A commit's output (`[main 1a2b3c4] …`): git prints it only for a commit made, so it is proof even when a later step of the call fails. */
-const COMMITTED = /^\[[^\]\n]+ [0-9a-f]{7,40}\]/m
+const COMMITTED = /^\[[^\]\n]+ [0-9a-f]{7,40}\]/gm
+/** A quiet commit (`-q`, `--quiet`, `-aqm`), which prints nothing when it is made. */
+const QUIET_COMMIT = new RegExp(String.raw`${GIT}commit\b[^\n;&|]*\s(?:-[a-zA-Z]*q[a-zA-Z]*|--quiet)\b`, 'g')
+/** What git says when a commit found nothing to make. */
+const NOTHING = /\b(?:nothing to commit|nothing added to commit|no changes added to commit)\b/
 /**
  * What opens a pull or merge request: the forges' CLIs (GitHub, GitLab, Gitea,
  * Forgejo, Azure DevOps), a push to GitLab with `merge_request.create`, and a
  * push to Gerrit's `refs/for/`.
  */
 const PR_CREATE = new RegExp(
-  String.raw`\b(?:gh\s+pr\s+create|glab\s+mr\s+create|tea\s+(?:pr|pulls?)\s+create|fj\s+pr\s+create|az\s+repos\s+pr\s+create)\b|${GIT}push\b[^\n;&|]*(?:merge_request\.create|refs\/for\/)`,
+  String.raw`\b(?:gh\s+pr\s+(?:create|new)|glab\s+mr\s+(?:create|new)|tea\s+(?:pr|pulls?)\s+create|fj\s+pr\s+create|az\s+repos\s+pr\s+create)\b|${GIT}push\b[^\n;&|]*(?:merge_request\.create|refs\/for\/)`,
 )
 /**
  * The new request's URL as the forge prints it: `/pull/7` (GitHub), `/-/merge_requests/12`
@@ -50,14 +54,18 @@ export type ToolSignal =
   | { kind: 'summon' }
   | { kind: 'other' }
 
-/** The trophies a call won: a commit made and a pull or merge request opened, each as its output proves, on any forge. */
+/**
+ * The trophies a call won: each commit made and a pull or merge request opened, as the output proves, on any forge.
+ * A quiet commit has no output to prove it: a call that answered without an error is taken as one.
+ */
 export function trophiesOf(tool: string, input: Record<string, unknown>, isError: boolean, text: string): number {
   if (PR_TOOL.test(tool)) return isError ? 0 : 1
   if (tool !== 'Bash') return 0
   const command = String(input.command ?? '')
-  const committed = COMMIT.test(command) && COMMITTED.test(text)
+  const proven = COMMIT.test(command) ? (text.match(COMMITTED)?.length ?? 0) : 0
+  const quiet = !isError && !NOTHING.test(text) ? (command.match(QUIET_COMMIT)?.length ?? 0) : 0
   const opened = !isError && PR_CREATE.test(command) && PR_OPENED.test(text) && !PR_EXISTS.test(text)
-  return Number(committed) + Number(opened)
+  return proven + quiet + Number(opened)
 }
 
 /** Whether a shell command is a risky move (Chaos). */

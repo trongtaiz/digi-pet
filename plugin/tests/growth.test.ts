@@ -192,6 +192,18 @@ test('signals: research, lines written, and checks read from their output, piped
   expect(won('git commit -m "x"', '[main 1a2b3c4] x\n 1 file changed')).toBe(1)
   expect(won('npm test && git commit -m "x"', 'Tests: 3 passed\n[main 1a2b3c4] x')).toBe(1)
   expect(won('git commit -m "x"', 'nothing to commit, working tree clean')).toBe(0)
+  // A quiet commit prints no commit line: the call answering without an error is its proof, unless git said there was nothing to commit.
+  expect(won('git add -A && git commit -q -F - <<\'EOF\'\nfix: x\nEOF\ngit log --oneline -1', 'a65b877 fix: x')).toBe(1)
+  expect(won('git -C app commit --quiet --no-verify -m x', '')).toBe(1)
+  expect(won('git commit -aqm x', '')).toBe(1)
+  expect(won('git commit -q -m x', '', true)).toBe(0)
+  expect(won('git commit -q -m x; git status -s', 'nothing to commit, working tree clean')).toBe(0)
+  expect(won('git commit -q -m x 2>&1 | tail -2', 'no changes added to commit (use "git add" and/or "git commit -a")')).toBe(0)
+  expect(won('git commit -m "x" -q; true', 'nothing added to commit but untracked files present')).toBe(0)
+  // Each commit in a call is a trophy: one per commit line, one per quiet commit.
+  expect(won('git commit -m a && git commit -m b', '[main 1a2b3c4] a\n 1 file changed\n[main 5e6f7a8] b')).toBe(2)
+  expect(won('git add a && git commit -q -m a\ngit add b && git commit -q -m b\ngit add c && git commit -q -m c\ngit log --oneline -3', 'e2c1767 c\n352104f b\n61318b3 a')).toBe(3)
+  expect(won('git commit -m a && git commit -q -m b', '[main 1a2b3c4] a')).toBe(2)
   expect(won('gh pr create --fill', 'https://github.com/me/repo/pull/42')).toBe(1)
   expect(won('gh pr create --fill', 'a pull request for branch "x" already exists')).toBe(0)
   expect(won('gh pr create --fill 2>&1 | tail -2', 'a pull request for branch "x" into branch "main" already exists:\nhttps://github.com/me/repo/pull/42')).toBe(0)
@@ -208,6 +220,9 @@ test('trophies on any forge: GitLab, Gitea and Forgejo, Azure DevOps and Gerrit,
   // A commit and a merge request in one call are two.
   expect(won('git commit -m x && git push -u origin HEAD && glab mr create --fill --yes', '[feat/x 1a2b3c4] x\n!12 x (feat/x)\n https://gitlab.com/me/app/-/merge_requests/12')).toBe(2)
   // GitLab, self-hosted with nested groups; a push that opens one with a push option.
+  // glab off a terminal prints the bare URL; `mr new` and `pr new` are the CLIs' own aliases.
+  expect(won('glab mr new --fill --yes', 'Creating merge request for feat/x into main in me/app\n\nhttps://gitlab.com/me/app/-/merge_requests/12')).toBe(1)
+  expect(won('gh pr new --fill', 'https://github.com/me/repo/pull/42')).toBe(1)
   expect(won('glab mr create --fill --yes', 'Creating merge request for feat/x into main in a/b/c\n\n!12 x (feat/x)\n https://git.corp.io/a/b/c/-/merge_requests/12')).toBe(1)
   expect(won('git push -o merge_request.create -o merge_request.target=main origin HEAD', 'remote: View merge request for feat/x:\nremote:   https://gitlab.com/me/app/-/merge_requests/12')).toBe(1)
   expect(won('git -C /Users/me/app push -o merge_request.create origin HEAD', 'remote: View merge request for feat/x:\nremote:   https://gitlab.com/me/app/-/merge_requests/12')).toBe(1)
