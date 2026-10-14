@@ -113,7 +113,8 @@ and the like).
 
 Failures are read from the check's output as well as its exit code, since most
 runs are piped through `tail`. Wins this stage show top right. The win ratio
-counts over the pet's whole life and decides its later evolutions.
+counts this stage's battles only, starts clean at each digivolution, and
+decides its later evolutions.
 
 ### Allies
 

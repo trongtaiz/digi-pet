@@ -384,7 +384,7 @@ function guideSection(): string {
         <dt>training</dt><dd>turns where Claude used a tool, up to ${TRAINING_PER_DAY} a day</dd>
         <dt>overfeeds</dt><dd>the context crossing 85% full</dd>
         <dt>sleep disturbances</dt><dd>turns sent during rest hours</dd>
-        <dt>battles · wins</dt><dd>a check gone red and green again in one turn is a win; one left red, a loss. The win ratio counts the pet's whole life; from 40% short of 80% a daily roll may let it through</dd>
+        <dt>battles · wins</dt><dd>a check gone red and green again in one turn is a win; one left red, a loss. The win ratio counts this stage's battles; from 40% short of 80% a daily roll may let it through</dd>
         <dt>chaos</dt><dd>risky commands (force push, <code>--no-verify</code>, <code>reset --hard</code>, <code>rm -rf</code>) and interrupted turns</dd>
       </dl>
     </div>

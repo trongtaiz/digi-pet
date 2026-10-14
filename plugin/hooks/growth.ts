@@ -33,8 +33,8 @@ export type Counts = {
 /** The pet as the store keeps it (`pet`): what it is, since when, and the counts it entered its stage with. */
 export type Pet = { species: string; enteredDay: string; base: Counts; log: { id: string; day: string }[] }
 
-/** What else growing reads: every battle ever (the win ratio carries over a digivolution), the day, the pace. */
-export type Context = { life: Pick<Counts, 'battles' | 'wins'>; day: string; pace: number }
+/** What else growing reads: the day, the pace. */
+export type Context = { day: string; pace: number }
 
 export const START_SPECIES = 'egg1'
 export const ACTIVE_TURNS = 5
@@ -152,7 +152,7 @@ export function rollOf(id: string, day: string): number {
 }
 
 function isMet(r: Rule, c: Counts, ctx: Context, roll: number): boolean {
-  const values: Record<Requirement, number> = { ...c, winRatio: winRatio(ctx.life) }
+  const values: Record<Requirement, number> = { ...c, winRatio: winRatio(c) }
   return REQUIREMENTS.every(k => {
     const range = r[k]
     if (!range) return true
@@ -171,7 +171,7 @@ function isGateOpen(stage: string, c: Counts, pace: number): boolean {
 }
 
 /** What the pet digivolves into now, given its stage's counts; null while its stage lasts or no rule lets it. */
-export function evolveTo(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { life: c, day: '', pace: 1 }): string | null {
+export function evolveTo(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { day: '', pace: 1 }): string | null {
   const s = species[id]
   if (!s || !s.rules.some(r => !r.jogress) || !isGateOpen(s.stage, c, ctx.pace)) return null
   return branchOf(id, c, species, ctx)
@@ -209,12 +209,12 @@ export type Branch = { to: string; needs: Need[]; isNow: boolean; isCatchAll: bo
 export type Forecast = { branches: Branch[]; virus: { to: string; have: number; need: number } | null }
 
 /** The stage's ways on, as the pane shows them; null where there is no choice to make. */
-export function forecastOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { life: c, day: '', pace: 1 }): Forecast | null {
+export function forecastOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { day: '', pace: 1 }): Forecast | null {
   const s = species[id]
   const rules = s?.rules.filter(r => !r.jogress) ?? []
   const targets = [...new Set(rules.map(r => r.to))]
   if (!s || targets.length < 2) return null
-  const values: Record<Requirement, number> = { ...c, winRatio: winRatio(ctx.life) }
+  const values: Record<Requirement, number> = { ...c, winRatio: winRatio(c) }
   const needsOf = (r: Rule): Need[] =>
     REQUIREMENTS.filter(k => r[k]).map(k => {
       const { min, max } = r[k]!
@@ -245,7 +245,7 @@ export function jogressOf(id: string, c: Counts, species: Record<string, Species
 }
 
 /** The way to the next stage (`day 1/2 · turns 40/100 → Rookie`) and how far along, 0..1; null at the last stage. */
-export function progressOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { life: c, day: '', pace: 1 }): { label: string; ratio: number } | null {
+export function progressOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context = { day: '', pace: 1 }): { label: string; ratio: number } | null {
   const s = species[id]
   const gate = s && GATES[s.stage]
   if (!s || !gate || !s.rules.length) return null
@@ -261,7 +261,7 @@ export function progressOf(id: string, c: Counts, species: Record<string, Specie
   if (gate.summons) add('summons', c.summons, scaled(gate.summons, ctx.pace))
   const fights = s.rules.some(r => r.jogress) ? JOGRESS : s.rules.find(r => r.battles)
   if (fights?.battles) {
-    parts.push(`battles ${c.battles}/${fights.battles.min} · win ${winRatio(ctx.life)}%${fights.winRatio ? `/${fights.winRatio.min}%` : ''}`)
+    parts.push(`battles ${c.battles}/${fights.battles.min} · win ${winRatio(c)}%${fights.winRatio ? `/${fights.winRatio.min}%` : ''}`)
     ratios.push(c.battles / fights.battles.min)
   }
   return { label: `${parts.join(' · ')} → ${NEXT_STAGE[s.stage]}`, ratio: Math.max(0, Math.min(1, ...ratios)) }

@@ -441,7 +441,7 @@ test('battles: a check gone red and green again in a turn is won, one left red i
   const day = (kept.get('ledger:s1') as Record<string, Record<string, number>>)['2026-10-05']!
   expect([day.battlesWon, day.battlesLost, day.checksPassed, day.toolTurns, day.activeMs]).toEqual([1, 1, 2, 4, 4 * 60_000])
   const stats = (await $.command.run({ ...RUN, command: 'digi', args: 'stats' })).text!
-  expect(stats).toContain('Battles this stage: 1W 1L · win ratio 50% over every battle')
+  expect(stats).toContain('Battles this stage: 1W 1L · win ratio 50% this stage')
   expect(stats).toContain('DEF 4')
 })
 

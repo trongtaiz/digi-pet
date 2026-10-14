@@ -37,7 +37,7 @@ export type DigiGrowth = {
   log: { name: string; day: string }[]
   /** What this stage's evolution rules read, counted since the pet entered it. */
   stage: { careMistakes: number; training: number; overfeed: number; sleepDisturbances: number; trophies: number; summons: number; chaos: number }
-  /** Every trophy ever, and the win ratio over every battle ever. */
+  /** Every trophy ever, and the win ratio over this stage's battles. */
   trophies: number
   winRatio: number
   /** The stage's ways on (`growth.ts` `forecastOf`, with names); null where there is no choice. */

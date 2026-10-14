@@ -285,7 +285,7 @@ function growthLines(g: DigiGrowth): string[] {
   return [
     `Stats: STA ${s.STA} · INT ${s.INT} · ATK ${s.ATK} · DEF ${s.DEF} · SPD ${s.SPD} · SYN ${s.SYN}`,
     `This stage: ${st.careMistakes} care mistakes · ${st.training} training · ${st.overfeed} overfeed · ${st.sleepDisturbances} sleep disturbances · ${st.chaos} chaos · ${st.trophies} trophies · ${st.summons} summons`,
-    `Battles this stage: ${g.battles.won}W ${g.battles.lost}L · win ratio ${g.winRatio}% over every battle · ${g.trophies} trophies ever`,
+    `Battles this stage: ${g.battles.won}W ${g.battles.lost}L · win ratio ${g.winRatio}% this stage · ${g.trophies} trophies ever`,
     g.next ? `Next: ${g.next.label}` : 'Fully digivolved',
     ...(g.log.length ? [`Evolution: ${g.log.map(e => `${e.name} (${e.day})`).join(' → ')}`] : []),
   ]
@@ -453,8 +453,8 @@ async function grow($: EngineInterface, ctx: Ctx) {
   // Read back every time: another session may have digivolved the pet.
   let pet = await petOf($)
   const all = countsOf(days, today, ctx.pace)
-  const life: Context = { life: all, day: today, pace: ctx.pace }
-  const to = evolveTo(pet.species, minus(all, pet.base), SPECIES, life)
+  const growing: Context = { day: today, pace: ctx.pace }
+  const to = evolveTo(pet.species, minus(all, pet.base), SPECIES, growing)
   if (to && isSpecies(to)) {
     const from = pet.species
     const isHatching = SPECIES[from]?.stage === 'egg'
@@ -463,7 +463,7 @@ async function grow($: EngineInterface, ctx: Ctx) {
     await digivolve($, ctx, pet, from, isHatching ? `${spriteOf(from).name} hatched into ${spriteOf(to).name}!` : `${spriteOf(from).name} digivolved to ${spriteOf(to).name}!`)
   }
   if ((await read($, species)) !== pet.species) await update($, species, () => pet.species)
-  const g = growthOf(pet, days, all, life)
+  const g = growthOf(pet, days, all, growing)
   await update($, growth, () => g)
   if ((await read($, battle)).won !== g.battles.won) await update($, battle, b => ({ ...b, won: g.battles.won }))
 }
@@ -490,13 +490,13 @@ async function digivolve($: EngineInterface, ctx: Ctx, pet: Pet, from: string, t
   await notify($, ctx, 'digi-pet', text)
 }
 
-function growthOf(pet: Pet, days: Ledger, all: Counts, life: Context): DigiGrowth {
+function growthOf(pet: Pet, days: Ledger, all: Counts, growing: Context): DigiGrowth {
   const stage = minus(all, pet.base)
   return {
     stats: statsOf(days),
     battles: { won: stage.wins, lost: stage.battles - stage.wins },
     ageDays: Object.values(days).filter(d => d.turns >= ACTIVE_TURNS).length,
-    next: progressOf(pet.species, stage, SPECIES, life),
+    next: progressOf(pet.species, stage, SPECIES, growing),
     log: pet.log.map(e => ({ name: spriteOf(e.id).name, day: e.day })),
     stage: {
       careMistakes: stage.careMistakes,
@@ -508,8 +508,8 @@ function growthOf(pet: Pet, days: Ledger, all: Counts, life: Context): DigiGrowt
       chaos: stage.chaos,
     },
     trophies: all.trophies,
-    winRatio: winRatio(all),
-    forecast: forecastJson(forecastOf(pet.species, stage, SPECIES, life)),
+    winRatio: winRatio(stage),
+    forecast: forecastJson(forecastOf(pet.species, stage, SPECIES, growing)),
   }
 }
 
@@ -529,7 +529,7 @@ async function jogress($: EngineInterface, ctx: Ctx): Promise<string> {
   const days = await byDay(storeOf($))
   const pet = await petOf($)
   const all = countsOf(days, today, ctx.pace)
-  const made = jogressOf(pet.species, minus(all, pet.base), SPECIES, { life: all, day: today, pace: ctx.pace })
+  const made = jogressOf(pet.species, minus(all, pet.base), SPECIES, { day: today, pace: ctx.pace })
   if ('missing' in made) return made.missing
   const text = `${spriteOf(pet.species).name} and ${made.partner} jogressed into ${spriteOf(made.to).name}!`
   await digivolve($, ctx, { species: made.to, enteredDay: today, base: all, log: [...pet.log, { id: made.to, day: today }] }, pet.species, text)

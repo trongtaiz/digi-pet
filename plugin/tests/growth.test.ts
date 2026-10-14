@@ -44,7 +44,7 @@ test('every branch from the egg can be taken at every pace: some rule for it is 
         queue.push(to)
         const taken = s.rules.filter(r => r.to === to).some(r => {
           const c = meeting(s.stage, r, pace)
-          return c.training <= Math.ceil(TRAINING_PER_DAY / pace) * Math.max(1, days) && evolveTo(id, c, SPECIES, { life: c, day: '2026-10-05', pace }) === to
+          return c.training <= Math.ceil(TRAINING_PER_DAY / pace) * Math.max(1, days) && evolveTo(id, c, SPECIES, { day: '2026-10-05', pace }) === to
         })
         expect(`${pace}: ${id} → ${to}: ${taken}`).toBe(`${pace}: ${id} → ${to}: true`)
       }
@@ -76,19 +76,20 @@ test('the forecast: each branch by its closest rule, where it leads now, the cat
   expect(forecastOf('bota', ZERO_COUNTS, SPECIES)).toBe(null)
 })
 
-test('Chaos turns a branch Virus; the win ratio is every battle ever, and short of 80% a daily roll may still let it through', () => {
+test('Chaos turns a branch Virus; the win ratio is this stage\'s battles, and short of 80% a daily roll may still let it through', () => {
   const agu = { ...ZERO_COUNTS, activeDays: 5, training: 40 }
   expect(evolveTo('agu', { ...agu, chaos: CHAOS_PER_DAY * 5 - 1 }, SPECIES)).toBe('grey')
   expect(evolveTo('agu', { ...agu, chaos: CHAOS_PER_DAY * 5 }, SPECIES)).toBe('devi')
   expect(evolveTo('koro', { ...ZERO_COUNTS, turns: 100, activeDays: 2, chaos: 10 }, SPECIES)).toBe('beta')
 
-  const grey = { ...ZERO_COUNTS, activeDays: 10, trophies: 30, battles: 15, wins: 0 }
-  // Fifteen battles this stage, all lost, but 90% won ever: it digivolves.
-  expect(evolveTo('grey', grey, SPECIES, { life: { battles: 100, wins: 90 }, day: '2026-10-05', pace: 1 })).toBe('metalgrey_vi')
-  expect(evolveTo('grey', grey, SPECIES, { life: { battles: 100, wins: 39 }, day: '2026-10-05', pace: 1 })).toBe(null)
+  const grey = { ...ZERO_COUNTS, activeDays: 10, trophies: 30, battles: 15 }
+  // Fifteen battles this stage, all lost: the wins of earlier stages do not carry it through.
+  expect(evolveTo('grey', { ...grey, wins: 0 }, SPECIES, { day: '2026-10-05', pace: 1 })).toBe(null)
+  expect(evolveTo('grey', { ...grey, wins: 14 }, SPECIES, { day: '2026-10-05', pace: 1 })).toBe('metalgrey_vi')
+  expect(evolveTo('grey', { ...grey, wins: 5 }, SPECIES, { day: '2026-10-05', pace: 1 })).toBe(null)
   // At 60% the chance is half: some days yes, some no, and the same answer all day.
   const days = Array.from({ length: 40 }, (_, i) => `2026-11-${String((i % 28) + 1).padStart(2, '0')}`)
-  const yes = days.filter(day => evolveTo('grey', grey, SPECIES, { life: { battles: 100, wins: 60 }, day, pace: 1 }) === 'metalgrey_vi')
+  const yes = days.filter(day => evolveTo('grey', { ...grey, battles: 20, wins: 12 }, SPECIES, { day, pace: 1 }) === 'metalgrey_vi')
   expect(yes.length > 5 && yes.length < 35).toBe(true)
   expect(rollOf('grey', '2026-11-01')).toBe(rollOf('grey', '2026-11-01'))
   for (const day of yes) expect(rollOf('grey', day) < 0.5).toBe(true)
@@ -104,7 +105,7 @@ test('trophies and summons gate the Ultimate and the Mega; a Mega jogresses with
   expect(progressOf('metalgrey_vi', { ...metal, summons: 4 }, SPECIES)!.label).toBe('day 21/21 · trophies 60/60 · summons 4/10 · battles 15/15 · win 100%/80% → Mega')
 
   const blitz = { ...ZERO_COUNTS, activeDays: 14, battles: 15, wins: 13 }
-  const ctx = { life: blitz, day: '2026-12-01', pace: 1 }
+  const ctx = { day: '2026-12-01', pace: 1 }
   expect(evolveTo('blitzgrey', blitz, SPECIES, ctx)).toBe(null)
   expect(jogressOf('blitzgrey', blitz, SPECIES, ctx)).toEqual({ to: 'omega_a', partner: 'Cres Garurumon' })
   expect('missing' in jogressOf('blitzgrey', { ...blitz, activeDays: 3 }, SPECIES, ctx)).toBe(true)
@@ -114,7 +115,7 @@ test('trophies and summons gate the Ultimate and the Mega; a Mega jogresses with
 })
 
 test('pace scales every stage, and training a day the other way', () => {
-  const fast = { life: ZERO_COUNTS, day: '', pace: PACES.fast! }
+  const fast = { day: '', pace: PACES.fast! }
   expect(evolveTo('egg1', { ...ZERO_COUNTS, turns: 1 }, SPECIES, fast)).toBe('bota')
   expect(evolveTo('koro', { ...ZERO_COUNTS, turns: 25, activeDays: 1 }, SPECIES, fast)).toBe('agu')
   expect(evolveTo('koro', { ...ZERO_COUNTS, turns: 199, activeDays: 4 }, SPECIES, { ...fast, pace: PACES.slow! })).toBe(null)
