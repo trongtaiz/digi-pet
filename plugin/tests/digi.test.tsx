@@ -733,3 +733,45 @@ test('a subagent\'s description reaches the field with no control characters', a
   expect(drawn).toContain(']8;;https:')
   expect(/\\u001b|\\u0007|\\u009b|[\u001b\u0007\u009b]/.test(drawn)).toBe(false)
 })
+
+test('on the desktop each grid is one still picture, so its pixels meet', async ($, on) => {
+  const clock = host(on, at('09:00'))
+  stepWith(on, () => HIT)
+  await start($)
+  await turn($)
+  const WORKING = { ...BAND, props: { ...BAND.props, isWorking: true } }
+  const pictures = async (ui: { findAll: (q: { type: string }) => Promise<unknown[]> }) =>
+    (await ui.findAll({ type: 'Svg' })) as { props: { source: string; alt: string; width: number; height: number } }[]
+
+  // At work: the fight, the pet and what it runs, three pictures and no Client.
+  await $.turn.start({ text: 'go', turnId: 't2' } as never)
+  const call = $.tool.call({ tool: 'Bash', command: 'npm test', description: 'run tests' } as never)
+  await clock.advance(10)
+  let ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'desktop', ...WORKING })
+  expect(await ui.findAll({ type: 'Client' })).toHaveLength(0)
+  let svgs = await pictures(ui)
+  expect(svgs).toHaveLength(3)
+  expect(svgs.map(s => s.props.alt)).toEqual(['Botamon · full', 'Botamon · full', 'Botamon · full'])
+  expect(svgs[0]!.props.source).toContain('WINS 0')
+  expect(svgs[1]!.props.source).toContain('Fighting!')
+  expect(svgs[2]!.props.source).toContain('npm test')
+  await ui.unmount()
+  await clock.advance(1000)
+  await call
+
+  // Too short a band for the screen: the small band, a picture still, four rows of 16.
+  ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'desktop', ...BAND, props: { ...BAND.props, maxRows: 4 } })
+  svgs = await pictures(ui)
+  expect(svgs).toHaveLength(1)
+  expect(svgs[0]!.props.source).toContain('Botamon')
+  expect(svgs[0]!.props.height).toBe(64)
+  await ui.unmount()
+
+  const pane = { component: 'Pane', requestId: 'digi', props: { title: 'digi-pet', isFocused: true, bodyColumns: 100, placement: 'inline' } }
+  ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'desktop', ...pane } as never)
+  svgs = await pictures(ui)
+  expect(svgs).toHaveLength(1)
+  expect(svgs[0]!.props.width).toBe(800)
+  expect(svgs[0]!.props.source).toContain('Hunger')
+  await ui.unmount()
+})

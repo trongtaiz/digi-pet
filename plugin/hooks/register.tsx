@@ -5,11 +5,11 @@
 // sessions keep it quiet. Each session's counts go to the store; after each
 // turn they grow the six stats and, once a stage has lasted, digivolve the pet.
 import { atom, read, update } from 'claude-code'
-import type { Elements, EngineInterface, Register, RenderElement } from 'claude-code'
+import type { ElementConstructor, Elements, EngineInterface, Register, RenderElement, SvgProps } from 'claude-code'
 
 import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiForecast, DigiGrowth, DigiMood, DigiSim } from '../types'
 import { allyOf, busyLabel, oneLine, toolLabel, toolRun } from './activity'
-import { segments } from './cells'
+import { gridSvg, segments } from './cells'
 import type { Grid } from './cells'
 import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, forecastOf, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
 import type { Context, Counts, Forecast, Pet } from './growth'
@@ -31,13 +31,13 @@ import {
 import type { Config, Quiet } from './hunger'
 import { byDay, totals, writer } from './ledger'
 import type { Counters, Ledger } from './ledger'
-import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, band, isLoud, miniBand, notification, statusLine, toast } from './render'
+import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, arena, band, isLoud, miniBand, notification, pane, statusLine, toast, toolRow } from './render'
 import type { Attribute, Hunger } from './render'
 import type { RunProps } from './run'
 import type { ScreenProps } from './screen'
 import { isRisky, signalOf, trophiesOf } from './signals'
 import { SPECIES } from './species.gen'
-import { isSpecies, petView, spriteOf } from './view'
+import { allyViews, isSpecies, paneView, petView, spriteOf } from './view'
 import type { PaneJson, ViewJson } from './view'
 
 const PANE = 'digi'
@@ -260,6 +260,15 @@ function drawn(ui: Pick<Elements['terminal'], 'Box' | 'Text'>, rows: Grid): Rend
       ))}
     </Box>
   )
+}
+
+/**
+ * A grid as one still picture, for a surface that draws cells as a web page does
+ * (the desktop): there rows of text stand apart and block glyphs come in other widths.
+ */
+function pictured(Svg: ElementConstructor<SvgProps>, rows: Grid, alt: string): RenderElement {
+  const { source, width, height } = gridSvg(rows)
+  return <Svg source={source} alt={alt} width={width} height={height} />
 }
 
 /** The record as lines: this session today, and every session ever. */
@@ -805,11 +814,14 @@ export const register: Register = (on, options) => {
     const v = await viewOf($, ctx, t)
     const width = Math.max(20, e.props.bodyColumns - 2)
     const pv = petView(v, 0)
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : undefined
+    const Client = 'Client' in ui ? ui.Client : undefined
+    const alt = `${pv.sprite.name} · ${v.quiet ?? v.hunger}`
+    const grid = (rows: Grid) => (Svg ? pictured(Svg, rows, alt) : drawn(ui, rows))
     // While a `/` or `@` picker is open the engine draws it above the band: one row keeps it near the prompt.
     const room = (await read($, isPicking)) ? 1 : e.props.maxRows
     let mine: RenderElement
-    if ('Client' in ui && room >= WORK_ROWS && width >= 60) {
-      const { Client } = ui
+    if ((Svg || Client) && room >= WORK_ROWS && width >= 60) {
       const isFighting = v.act !== undefined && !(isLoud(pv) && room >= LOUD_ROWS)
       const fight = await read($, battle)
       const block = Math.min(width, isFighting ? WORK_BLOCK : BAND_WIDTH)
@@ -818,12 +830,17 @@ export const register: Register = (on, options) => {
       const shown = run ? { ...v, tool: 'Fighting!' } : v
       const props: ScreenProps = { kind: 'band', width: block, maxRows: run ? room - 1 : room, view: shown, isStill: ctx.isStill }
       const shape = isLoud(pv) && room >= LOUD_ROWS ? 'loud' : (v.act ?? 'idle')
-      const screen = <Client key={`band-${v.species}-${shape}`} module="./screen.tsx" width={block} props={props} />
+      const screen =
+        Svg || !Client ? grid(band(petView(shown, 0), 0, block, props.maxRows)) : <Client key={`band-${v.species}-${shape}`} module="./screen.tsx" width={block} props={props} />
       const field = width - block - 2
       const top =
         isFighting && field >= MIN_ARENA ? (
           <Box flexDirection="row" columnGap={2} alignItems="flex-end">
-            <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, allies: v.allies ?? [], isStill: ctx.isStill }} />
+            {Svg || !Client ? (
+              grid(arena(0, field, v.act!, fight, allyViews(v.allies ?? [])))
+            ) : (
+              <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, allies: v.allies ?? [], isStill: ctx.isStill }} />
+            )}
             {screen}
           </Box>
         ) : (
@@ -833,15 +850,15 @@ export const register: Register = (on, options) => {
       mine = runProps ? (
         <Box flexDirection="column" alignItems="flex-end">
           {top}
-          <Client key={`run-${run!.id}`} module="./run.tsx" width={width} props={runProps} />
+          {Svg || !Client ? grid(toolRow(runProps, width)) : <Client key={`run-${run!.id}`} module="./run.tsx" width={width} props={runProps} />}
         </Box>
       ) : (
         top
       )
     } else if (room >= MINI_BAND_ROWS && width >= 40) {
-      mine = drawn(ui, miniBand(pv, 0, Math.min(width, BAND_WIDTH)))
+      mine = grid(miniBand(pv, 0, Math.min(width, BAND_WIDTH)))
     } else {
-      mine = drawn(ui, band(pv, 0, width, 1))
+      mine = grid(band(pv, 0, width, 1))
     }
     const below = await next(e)
     // At the band's right edge, as spinner's pet sat.
@@ -867,9 +884,11 @@ export const register: Register = (on, options) => {
       ...(g ? { stats: g.stats, battles: g.battles, ageDays: g.ageDays, log: g.log, trophies: g.trophies, chaos: g.stage.chaos, forecast: g.forecast } : {}),
       weight: weightOf((await read($, feeding)).contextTokens),
     }
-    if (!('Client' in ui)) return <Text>{`${spriteOf(view.species).name} · ${view.quiet ?? view.hunger}`}</Text>
-    const { Client } = ui
+    const alt = `${spriteOf(view.species).name} · ${view.quiet ?? view.hunger}`
     const width = Math.max(40, e.props.bodyColumns)
+    if (e.surface !== 'terminal' && 'Svg' in ui) return pictured(ui.Svg, pane(paneView(view, 0), 0, width), alt)
+    if (!('Client' in ui)) return <Text>{alt}</Text>
+    const { Client } = ui
     const props: ScreenProps = { kind: 'pane', width, view, isStill: ctx.isStill }
     return <Client key="pane" module="./screen.tsx" width={width} props={props} />
   })

@@ -227,6 +227,8 @@ Set them with `claude plugin configure digi-pet@digi-pet`:
 | `pace` | normal | `fast`, `normal` or `slow` growth |
 | `reducedMotion` | false | Draw everything still |
 
+In the desktop app the band and the pane are drawn as pictures, still, and redrawn as the pet changes: a web page sets rows of text apart and draws block glyphs at other widths, so the pixels would not meet.
+
 ## Development
 
 ```

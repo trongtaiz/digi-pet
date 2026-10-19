@@ -113,3 +113,75 @@ export function cells(cv: Canvas): Grid {
   }
   return g
 }
+
+// ---- pictures ------------------------------------------------------------
+
+/** A cell's size in a picture, in CSS pixels: two square pixels, one above the other. */
+export const CELL_W = 8
+export const CELL_H = 16
+
+const BLOCKS = new Set(['▀', '▄', '█'])
+
+const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * The grid as one SVG, for a surface that draws cells as a web page does: there
+ * a row of text stands apart from the next and a block glyph comes from a font
+ * of another width, so the pixels would not meet. Here each half-block is two
+ * rects and each run of text is stretched to its cells. `fg` colors text with none.
+ */
+export function gridSvg(g: Grid, fg = '#e6e6e6'): { source: string; width: number; height: number } {
+  const cols = Math.max(0, ...g.map(row => row.length))
+  const width = cols * CELL_W
+  const height = g.length * CELL_H
+  const out: string[] = []
+  const rect = (x: number, y: number, w: number, h: number, color: string) =>
+    out.push(`<rect x="${x * CELL_W}" y="${y}" width="${w * CELL_W}" height="${h}" fill="${color}"/>`)
+  g.forEach((row, r) => {
+    // Each cell's top and bottom halves, run together where neighbours match.
+    const halves = row.map(cell => {
+      const ink = cell.c ?? fg
+      if (cell.ch === '█') return [ink, ink]
+      if (cell.ch === '▀') return [ink, cell.bg]
+      if (cell.ch === '▄') return [cell.bg, ink]
+      return [cell.bg, cell.bg]
+    })
+    for (let x = 0; x < row.length; ) {
+      const [top, bottom] = halves[x]!
+      let end = x + 1
+      while (end < row.length && halves[end]![0] === top && halves[end]![1] === bottom) end++
+      if (top && top === bottom) rect(x, r * CELL_H, end - x, CELL_H, top)
+      else {
+        if (top) rect(x, r * CELL_H, end - x, CELL_H / 2, top)
+        if (bottom) rect(x, r * CELL_H + CELL_H / 2, end - x, CELL_H / 2, bottom)
+      }
+      x = end
+    }
+    // Text: one run of a style at a time, spaces at either end left out.
+    for (let x = 0; x < row.length; ) {
+      const cell = row[x]!
+      if (cell.ch === '' || cell.ch === ' ' || BLOCKS.has(cell.ch)) {
+        x++
+        continue
+      }
+      let end = x + 1
+      while (end < row.length) {
+        const next = row[end]!
+        if (next.ch !== '' && (BLOCKS.has(next.ch) || next.c !== cell.c || !!next.b !== !!cell.b || !!next.d !== !!cell.d)) break
+        end++
+      }
+      let last = end
+      while (row[last - 1]!.ch === ' ') last--
+      const text = row.slice(x, last).map(c => c.ch).join('')
+      const style = `${cell.b ? ' font-weight="600"' : ''}${cell.d ? ' opacity="0.6"' : ''}`
+      out.push(
+        `<text x="${x * CELL_W}" y="${r * CELL_H + CELL_H * 0.75}" textLength="${(last - x) * CELL_W}" lengthAdjust="spacingAndGlyphs" fill="${cell.c ?? fg}"${style}>${escape(text)}</text>`,
+      )
+      x = end
+    }
+  })
+  const source =
+    `<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges" ` +
+    `font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="${CELL_H * 0.8}">${out.join('')}</svg>`
+  return { source, width, height }
+}
