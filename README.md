@@ -227,7 +227,7 @@ Set them with `claude plugin configure digi-pet@digi-pet`:
 | `pace` | normal | `fast`, `normal` or `slow` growth |
 | `reducedMotion` | false | Draw everything still |
 
-In the desktop app the band and the pane are drawn as pictures, still, and redrawn as the pet changes: a web page sets rows of text apart and draws block glyphs at other widths, so the pixels would not meet.
+In the desktop app the band and the pane are drawn as pictures, redrawn as the pet changes: a web page sets rows of text apart and draws block glyphs at other widths, so the pixels would not meet. The pet's screen, the fight and the pane play their loops as the terminal's do; the tool row under the pet is still, and so is a picture too big for the desktop to take, such as a wide field of allies.
 
 ## Development
 

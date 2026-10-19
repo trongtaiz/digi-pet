@@ -130,13 +130,30 @@ const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;
  * of another width, so the pixels would not meet. Here each half-block is two
  * rects and each run of text is stretched to its cells. `fg` colors text with none.
  */
-export function gridSvg(g: Grid, fg = '#e6e6e6'): { source: string; width: number; height: number } {
+export function gridSvg(g: Grid, fg = '#e6e6e6'): Picture {
+  return svg(g, svgBody(g, fg))
+}
+
+/** An SVG and its size in CSS pixels. */
+export type Picture = { source: string; width: number; height: number }
+
+// Drawn in pixels, a cell 1 across and 2 down, scaled to CELL_W by CELL_H.
+function svg(g: Grid, body: string, style = ''): Picture {
   const cols = Math.max(0, ...g.map(row => row.length))
-  const width = cols * CELL_W
-  const height = g.length * CELL_H
+  const source =
+    `<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="${cols * CELL_W}" height="${g.length * CELL_H}" viewBox="0 0 ${cols} ${g.length * 2}" shape-rendering="crispEdges" ` +
+    `font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="1.6">${style}${body}</svg>`
+  return { source, width: cols * CELL_W, height: g.length * CELL_H }
+}
+
+/** The grid's pixels, a path a color, and its texts; a cell left `' '` with no background draws nothing. */
+function svgBody(g: Grid, fg: string): string {
   const out: string[] = []
-  const rect = (x: number, y: number, w: number, h: number, color: string) =>
-    out.push(`<rect x="${x * CELL_W}" y="${y}" width="${w * CELL_W}" height="${h}" fill="${color}"/>`)
+  const paths = new Map<string, string[]>()
+  const rect = (x: number, y: number, w: number, h: number, color: string) => {
+    if (!paths.has(color)) paths.set(color, [])
+    paths.get(color)!.push(`M${x} ${y}h${w}v${h}h-${w}z`)
+  }
   g.forEach((row, r) => {
     // Each cell's top and bottom halves, run together where neighbours match.
     const halves = row.map(cell => {
@@ -150,10 +167,10 @@ export function gridSvg(g: Grid, fg = '#e6e6e6'): { source: string; width: numbe
       const [top, bottom] = halves[x]!
       let end = x + 1
       while (end < row.length && halves[end]![0] === top && halves[end]![1] === bottom) end++
-      if (top && top === bottom) rect(x, r * CELL_H, end - x, CELL_H, top)
+      if (top && top === bottom) rect(x, r * 2, end - x, 2, top)
       else {
-        if (top) rect(x, r * CELL_H, end - x, CELL_H / 2, top)
-        if (bottom) rect(x, r * CELL_H + CELL_H / 2, end - x, CELL_H / 2, bottom)
+        if (top) rect(x, r * 2, end - x, 1, top)
+        if (bottom) rect(x, r * 2 + 1, end - x, 1, bottom)
       }
       x = end
     }
@@ -175,13 +192,52 @@ export function gridSvg(g: Grid, fg = '#e6e6e6'): { source: string; width: numbe
       const text = row.slice(x, last).map(c => c.ch).join('')
       const style = `${cell.b ? ' font-weight="600"' : ''}${cell.d ? ' opacity="0.6"' : ''}`
       out.push(
-        `<text x="${x * CELL_W}" y="${r * CELL_H + CELL_H * 0.75}" textLength="${(last - x) * CELL_W}" lengthAdjust="spacingAndGlyphs" fill="${cell.c ?? fg}"${style}>${escape(text)}</text>`,
+        `<text x="${x}" y="${r * 2 + 1.5}" textLength="${last - x}" lengthAdjust="spacingAndGlyphs" fill="${cell.c ?? fg}"${style}>${escape(text)}</text>`,
       )
       x = end
     }
   })
-  const source =
-    `<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges" ` +
-    `font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="${CELL_H * 0.8}">${out.join('')}</svg>`
-  return { source, width, height }
+  const shapes = [...paths].map(([color, d]) => `<path fill="${color}" d="${d.join('')}"/>`)
+  return shapes.join('') + out.join('')
+}
+
+const sameCell = (a: Cell, b: Cell) => a.ch === b.ch && a.c === b.c && a.bg === b.bg && !!a.b === !!b.b && !!a.d === !!b.d
+const sameGrid = (a: Grid, b: Grid) => a.length === b.length && a.every((row, y) => row.length === b[y]!.length && row.every((cell, x) => sameCell(cell, b[y]![x]!)))
+
+/**
+ * One loop of an animation, `frame(0)` up to where it repeats, looked for over
+ * `most` frames; just `frame(0)` when it does not repeat within half of them.
+ */
+export function loopOf(frame: (t: number) => Grid, most: number): Grid[] {
+  const frames = Array.from({ length: most }, (_, t) => frame(t))
+  for (let period = 1; period <= most / 2; period++) {
+    if (frames.every((g, t) => t + period >= most || sameGrid(g, frames[t + period]!))) return frames.slice(0, period)
+  }
+  return frames.slice(0, 1)
+}
+
+/**
+ * A loop of frames as one SVG that plays itself, a frame every `ms`: what no
+ * frame changes is drawn once, and each distinct frame draws only the cells it
+ * changes, shown in its turn by a CSS animation. Frames of other sizes: the first, still.
+ */
+export function loopSvg(frames: Grid[], ms: number, fg = '#e6e6e6'): Picture {
+  const first = frames[0]!
+  if (frames.length < 2 || frames.some(g => g.length !== first.length || g.some((row, y) => row.length !== first[y]!.length))) return gridSvg(first, fg)
+  const varies = first.map((row, y) => row.map((cell, x) => frames.some(g => !sameCell(g[y]![x]!, cell))))
+  const only = (g: Grid, keep: boolean) => g.map((row, y) => row.map((cell, x) => (varies[y]![x] === keep ? cell : { ch: ' ' })))
+  const distinct: Grid[] = []
+  const order = frames.map(g => {
+    const i = distinct.findIndex(d => sameGrid(d, g))
+    if (i >= 0) return i
+    distinct.push(g)
+    return distinct.length - 1
+  })
+  // Each distinct frame shows in the steps it is played and hides in the rest.
+  const keyframes = distinct.map((_, i) => {
+    const steps = order.map((k, t) => `${((t * 100) / order.length).toFixed(3)}%{opacity:${k === i ? 1 : 0}}`).join('')
+    return `@keyframes f${i}{${steps}100%{opacity:${order[0] === i ? 1 : 0}}}.f${i}{opacity:${order[0] === i ? 1 : 0};animation:f${i} ${frames.length * ms}ms step-end infinite}`
+  })
+  const body = svgBody(only(first, false), fg) + distinct.map((g, i) => `<g class="f${i}">${svgBody(only(g, true), fg)}</g>`).join('')
+  return svg(first, body, `<style>${keyframes.join('')}</style>`)
 }

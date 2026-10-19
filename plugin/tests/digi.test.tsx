@@ -741,7 +741,7 @@ test('on the desktop each grid is one still picture, so its pixels meet', async 
   await turn($)
   const WORKING = { ...BAND, props: { ...BAND.props, isWorking: true } }
   const pictures = async (ui: { findAll: (q: { type: string }) => Promise<unknown[]> }) =>
-    (await ui.findAll({ type: 'Svg' })) as { props: { source: string; alt: string; width: number; height: number } }[]
+    (await ui.findAll({ type: 'Svg' })) as { props: { source: string; alt: string; width: number; height: number; isInteractive?: boolean } }[]
 
   // At work: the fight, the pet and what it runs, three pictures and no Client.
   await $.turn.start({ text: 'go', turnId: 't2' } as never)
@@ -754,6 +754,10 @@ test('on the desktop each grid is one still picture, so its pixels meet', async 
   expect(svgs.map(s => s.props.alt)).toEqual(['Botamon · full', 'Botamon · full', 'Botamon · full'])
   expect(svgs[0]!.props.source).toContain('WINS 0')
   expect(svgs[1]!.props.source).toContain('Fighting!')
+  // The fight and the pet's screen play their loops, as the terminal's do; the tool row, its time counting up, is still.
+  expect(svgs.map(s => s.props.isInteractive === true)).toEqual([true, true, false])
+  expect(svgs[0]!.props.source).toContain(`step-end infinite`)
+  expect(svgs[1]!.props.source).toContain('@keyframes f1')
   expect(svgs[2]!.props.source).toContain('npm test')
   await ui.unmount()
   await clock.advance(1000)
@@ -772,6 +776,20 @@ test('on the desktop each grid is one still picture, so its pixels meet', async 
   svgs = await pictures(ui)
   expect(svgs).toHaveLength(1)
   expect(svgs[0]!.props.width).toBe(800)
+  expect(svgs[0]!.props.isInteractive).toBe(true)
   expect(svgs[0]!.props.source).toContain('Hunger')
+  await ui.unmount()
+})
+
+test("on the desktop, reducedMotion keeps the pet's screen still", { options: { reducedMotion: true } }, async ($, on) => {
+  host(on, at('09:00'))
+  stepWith(on, () => HIT)
+  await start($)
+  await turn($)
+  const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'desktop', ...BAND })
+  const svgs = (await ui.findAll({ type: 'Svg' })) as unknown as { props: { source: string; isInteractive?: boolean } }[]
+  expect(svgs).toHaveLength(1)
+  expect(svgs[0]!.props.isInteractive).toBeUndefined()
+  expect(svgs[0]!.props.source).not.toContain('@keyframes')
   await ui.unmount()
 })

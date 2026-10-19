@@ -1,6 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
-import { HUNGER_COLOR, arena, band, digivice, pane, toolRow } from '../hooks/render'
+import { HUNGER_COLOR, BAND_WIDTH, arena, band, digivice, pane, toolRow } from '../hooks/render'
+import { loopOf, loopSvg } from '../hooks/cells'
 import { oneLine, toolLabel, toolRun } from '../hooks/activity'
 import type { PaneView } from '../hooks/render'
 import { SPRITES } from '../hooks/sprites.gen'
@@ -168,4 +169,18 @@ test('text from a tool call or a subagent reaches the band with no control chara
   expect(toolRun({ tool: 'Bash', command: evil }).text).toBe('a]8;;https://xb2Jc d')
   expect(toolLabel({ tool: 'Bash', command: evil })).toBe('Bash: a]8;;https://xb2Jc d')
   expect(toolLabel({ tool: 'Grep', pattern: '\x1b[31mred' })).toBe('Grep: [31mred')
+})
+
+test('a loop for the desktop: found where it repeats, the still part drawn once, one group a distinct frame', () => {
+  const frames = loopOf(t => band(view, t, BAND_WIDTH, 12), 96)
+  expect(frames.length).toBeGreaterThan(1)
+  expect(JSON.stringify(band(view, frames.length, BAND_WIDTH, 12))).toBe(JSON.stringify(frames[0]))
+  const { source } = loopSvg(frames, 500)
+  // The name is in no frame's group: it never changes.
+  expect(source.split('Koromon')).toHaveLength(2)
+  expect(source.split('<g class="f').length - 1).toBe(new Set(frames.map(g => JSON.stringify(g))).size)
+  expect(source).toContain(`animation:f0 ${frames.length * 500}ms step-end infinite`)
+  // A frame that never repeats has no loop: drawn still.
+  expect(loopOf(t => [[{ ch: String(t) }]], 8)).toHaveLength(1)
+  expect(loopSvg([band(view, 0, BAND_WIDTH, 12)], 500).source).not.toContain('@keyframes')
 })

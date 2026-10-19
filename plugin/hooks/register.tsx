@@ -9,7 +9,7 @@ import type { ElementConstructor, Elements, EngineInterface, Register, RenderEle
 
 import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFeeding, DigiForecast, DigiGrowth, DigiMood, DigiSim } from '../types'
 import { allyOf, busyLabel, oneLine, toolLabel, toolRun } from './activity'
-import { gridSvg, segments } from './cells'
+import { gridSvg, loopOf, loopSvg, segments } from './cells'
 import type { Grid } from './cells'
 import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, forecastOf, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
 import type { Context, Counts, Forecast, Pet } from './growth'
@@ -34,6 +34,8 @@ import type { Counters, Ledger } from './ledger'
 import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, arena, band, isLoud, miniBand, notification, pane, statusLine, toast, toolRow } from './render'
 import type { Attribute, Hunger } from './render'
 import type { RunProps } from './run'
+import { ARENA_MS } from './arena'
+import { FRAME_MS } from './screen'
 import type { ScreenProps } from './screen'
 import { isRisky, signalOf, trophiesOf } from './signals'
 import { SPECIES } from './species.gen'
@@ -269,6 +271,22 @@ function drawn(ui: Pick<Elements['terminal'], 'Box' | 'Text'>, rows: Grid): Rend
 function pictured(Svg: ElementConstructor<SvgProps>, rows: Grid, alt: string): RenderElement {
   const { source, width, height } = gridSvg(rows)
   return <Svg source={source} alt={alt} width={width} height={height} />
+}
+
+/** Frames looked through for where an animation repeats. */
+const LOOP_MOST = 96
+/** The most an Svg's markup may hold. */
+const SVG_MAX = 131_072
+
+/**
+ * An animation as a picture that plays its own loop, a frame every `ms`, as the
+ * terminal's does; still with reduced motion, or past what an Svg may hold.
+ */
+function playing(Svg: ElementConstructor<SvgProps>, frame: (t: number) => Grid, ms: number, alt: string, isStill: boolean): RenderElement {
+  if (isStill) return pictured(Svg, frame(0), alt)
+  const { source, width, height } = loopSvg(loopOf(frame, LOOP_MOST), ms)
+  if (source.length > SVG_MAX) return pictured(Svg, frame(0), alt)
+  return <Svg source={source} alt={alt} width={width} height={height} isInteractive />
 }
 
 /** The record as lines: this session today, and every session ever. */
@@ -831,15 +849,19 @@ export const register: Register = (on, options) => {
       const props: ScreenProps = { kind: 'band', width: block, maxRows: run ? room - 1 : room, view: shown, isStill: ctx.isStill }
       const shape = isLoud(pv) && room >= LOUD_ROWS ? 'loud' : (v.act ?? 'idle')
       const screen =
-        Svg || !Client ? grid(band(petView(shown, 0), 0, block, props.maxRows)) : <Client key={`band-${v.species}-${shape}`} module="./screen.tsx" width={block} props={props} />
+        Client && !Svg ? (
+          <Client key={`band-${v.species}-${shape}`} module="./screen.tsx" width={block} props={props} />
+        ) : (
+          playing(Svg!, t => band(petView(shown, t), t, block, props.maxRows), FRAME_MS, alt, ctx.isStill)
+        )
       const field = width - block - 2
       const top =
         isFighting && field >= MIN_ARENA ? (
           <Box flexDirection="row" columnGap={2} alignItems="flex-end">
-            {Svg || !Client ? (
-              grid(arena(0, field, v.act!, fight, allyViews(v.allies ?? [])))
-            ) : (
+            {Client && !Svg ? (
               <Client key={`arena-${v.act}-${fight.won}`} module="./arena.tsx" width={field} props={{ width: field, act: v.act!, fight, allies: v.allies ?? [], isStill: ctx.isStill }} />
+            ) : (
+              playing(Svg!, t => arena(t, field, v.act!, fight, allyViews(v.allies ?? [])), ARENA_MS, alt, ctx.isStill)
             )}
             {screen}
           </Box>
@@ -856,7 +878,8 @@ export const register: Register = (on, options) => {
         top
       )
     } else if (room >= MINI_BAND_ROWS && width >= 40) {
-      mine = grid(miniBand(pv, 0, Math.min(width, BAND_WIDTH)))
+      const mini = (t: number) => miniBand(petView(v, t), t, Math.min(width, BAND_WIDTH))
+      mine = Svg ? playing(Svg, mini, FRAME_MS, alt, ctx.isStill) : drawn(ui, mini(0))
     } else {
       mine = grid(band(pv, 0, width, 1))
     }
@@ -886,7 +909,7 @@ export const register: Register = (on, options) => {
     }
     const alt = `${spriteOf(view.species).name} · ${view.quiet ?? view.hunger}`
     const width = Math.max(40, e.props.bodyColumns)
-    if (e.surface !== 'terminal' && 'Svg' in ui) return pictured(ui.Svg, pane(paneView(view, 0), 0, width), alt)
+    if (e.surface !== 'terminal' && 'Svg' in ui) return playing(ui.Svg, t => pane(paneView(view, t), t, width), FRAME_MS, alt, ctx.isStill)
     if (!('Client' in ui)) return <Text>{alt}</Text>
     const { Client } = ui
     const props: ScreenProps = { kind: 'pane', width, view, isStill: ctx.isStill }
