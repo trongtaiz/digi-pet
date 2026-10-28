@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, eggOf, countsOf, evolveTo, forecastOf, jogressOf, minus, progressOf, rollOf, statsOf } from '../hooks/growth'
+import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, choiceOf, eggOf, countsOf, evolveTo, forecastOf, jogressOf, minus, progressOf, rollOf, statsOf } from '../hooks/growth'
 import type { Counts, Rule } from '../hooks/growth'
 import { ZERO } from '../hooks/ledger'
 import type { Counters } from '../hooks/ledger'
@@ -117,6 +117,15 @@ test('trophies and summons gate the Ultimate and the Mega; a Mega jogresses with
   expect('missing' in jogressOf('grey', grey, SPECIES, ctx)).toBe(true)
   expect(progressOf('blitzgrey', { ...blitz, activeDays: 3 }, SPECIES)!.label).toBe('day 3/14 · battles 15/15 · win 86%/80% → Jogress')
   expect(progressOf('omega_a', blitz, SPECIES)).toBe(null)
+
+  // Kimeramon has two ways on: BanchoLeomon by its rule, Millenniumon by jogress. Both open is a choice.
+  const kimera = { ...ZERO_COUNTS, activeDays: 21, trophies: 60, summons: 10, battles: 15, wins: 15 }
+  expect(choiceOf('chimaira', kimera, SPECIES, ctx)).toEqual({ evolve: 'bancholeo', jogress: 'millenniu' })
+  // Two care mistakes close BanchoLeomon: jogress is the only way, no choice to wait for.
+  expect(choiceOf('chimaira', { ...kimera, careMistakes: 2 }, SPECIES, ctx)).toBe(null)
+  expect(choiceOf('blitzgrey', blitz, SPECIES, ctx)).toBe(null)
+  // Not yet: what the jogress waits for, and what it makes.
+  expect(jogressOf('chimaira', { ...kimera, activeDays: 5 }, SPECIES, ctx)).toEqual({ missing: 'Not yet: day 5/21 · trophies 60/60 · summons 10/10 · battles 15/15 · win 100%/80% → Millenniumon (jogress)' })
 })
 
 test('pace scales every stage, and training a day the other way', () => {

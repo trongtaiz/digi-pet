@@ -603,6 +603,43 @@ test('a Mega that has fought enough jogresses with its partner', async ($, on) =
   expect(notes.some(n => n.includes('BlitzGreymon and Cres Garurumon jogressed into Omnimon Alter-S!'))).toBe(true)
 })
 
+/** A Kimeramon whose stage is done: 21 active days, 60 trophies, 10 summons, 15 battles won. */
+function kimeramon(on: On) {
+  const days: Record<string, unknown> = { '2026-09-01': { turns: 5, trophies: 60, summons: 10, battlesWon: 15 } }
+  for (let d = 2; d <= 21; d++) days[`2026-09-${String(d).padStart(2, '0')}`] = { turns: 5 }
+  return host(on, at('09:00'), { 'ledger:old': days, pet: { species: 'chimaira', enteredDay: '2026-08-31', base: {}, log: [] } })
+}
+
+test('two ways open (a digivolution and a jogress): the pet waits that day for a pick, /digi evolve takes the digivolution', async ($, on) => {
+  kimeramon(on)
+  stepWith(on, () => HIT)
+  await start($)
+  await turn($)
+  expect((kept.get('pet') as { species: string; readyDay: string })).toMatchObject({ species: 'chimaira', readyDay: '2026-10-05' })
+  const ready = 'Kimeramon is ready: /digi evolve → BanchoLeomon, or /digi jogress → Millenniumon. With no pick, BanchoLeomon tomorrow.'
+  expect(toasts).toContain(ready)
+  expect(notes.some(n => n.includes(ready))).toBe(true)
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'stats' })).text).toContain('Next: ready: /digi evolve → BanchoLeomon, or /digi jogress → Millenniumon')
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'evolve' })).text).toBe('Kimeramon digivolved to BanchoLeomon!')
+  expect((kept.get('pet') as { species: string; readyDay?: string })).toMatchObject({ species: 'bancholeo' })
+  expect((kept.get('pet') as { readyDay?: string }).readyDay).toBe(undefined)
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'evolve' })).text).toBe('BanchoLeomon has no choice to make: it digivolves on its own when its stage allows.')
+})
+
+test('two ways open: /digi jogress takes the jogress the same day; with no pick, the next day digivolves on its own', async ($, on) => {
+  const clock = kimeramon(on)
+  stepWith(on, () => HIT)
+  await start($)
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'jogress' })).text).toBe('Kimeramon and Mugendramon jogressed into Millenniumon!')
+  // Another Kimeramon, left to wait: the next working day it digivolves at the end of a turn.
+  kept.set('pet', { species: 'chimaira', enteredDay: '2026-08-31', base: {}, log: [], readyDay: '2026-10-05' })
+  await turn($)
+  expect((kept.get('pet') as { species: string }).species).toBe('chimaira')
+  await clock.advance(24 * 3_600_000)
+  await turn($)
+  expect((kept.get('pet') as { species: string }).species).toBe('bancholeo')
+})
+
 test('a red check is a boss on the field until it passes; the win blows it up', async ($, on) => {
   const clock = host(on, at('09:00'))
   stepWith(on, () => HIT)

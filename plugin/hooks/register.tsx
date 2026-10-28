@@ -11,7 +11,7 @@ import type { DigiActivity, DigiAlly, DigiBattle, DigiRun, DigiEvolving, DigiFee
 import { allyOf, busyLabel, oneLine, toolLabel, toolRun } from './activity'
 import { gridSvg, loopOf, loopSvg, segments } from './cells'
 import type { Grid } from './cells'
-import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, countsOf, eggOf, evolveTo, forecastOf, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
+import { ACTIVE_TURNS, PATS_PER_DAY, START_SPECIES, asPet, choiceOf, countsOf, eggOf, evolveTo, forecastOf, jogressOf, minus, paceOf, progressOf, statsOf, winRatio } from './growth'
 import type { Context, Counts, Forecast, Pet } from './growth'
 import {
   clockText,
@@ -81,7 +81,7 @@ const evolving = atom({ plugin: 'digi-pet', key: 'evolving' } as const, null as 
 const battle = atom({ plugin: 'digi-pet', key: 'battle' } as const, { open: 0, won: 0, flash: false } as DigiBattle)
 const allies = atom({ plugin: 'digi-pet', key: 'allies' } as const, [] as DigiAlly[])
 
-const USAGE = '[stats | pane | log | pet | jogress | sleep | wake | break 90m|until 15:30|off | side [off] | sim <species> [state] [to] | sim off | debug ttl <min>|off]'
+const USAGE = '[stats | pane | log | pet | evolve | jogress | sleep | wake | break 90m|until 15:30|off | side [off] | sim <species> [state] [to] | sim off | debug ttl <min>|off]'
 
 /** Whether the prompt's draft has a `/` or `@` picker open, which the engine draws above the band. */
 function isPickerOpen(text: string, cursor = text.length): boolean {
@@ -482,7 +482,24 @@ async function grow($: EngineInterface, ctx: Ctx) {
   let pet = await petOf($)
   const all = countsOf(days, today, ctx.pace)
   const growing: Context = { day: today, pace: ctx.pace }
-  const to = evolveTo(pet.species, minus(all, pet.base), SPECIES, growing)
+  const stage = minus(all, pet.base)
+  let to = evolveTo(pet.species, stage, SPECIES, growing)
+  // Two ways on open: the pet waits the day it found them for /digi evolve or /digi jogress, then digivolves on its own.
+  const choice = choiceOf(pet.species, stage, SPECIES, growing)
+  if (choice && (pet.readyDay === undefined || pet.readyDay >= today)) {
+    to = null
+    if (pet.readyDay === undefined) {
+      pet = { ...pet, readyDay: today }
+      await $.store.set('pet', pet)
+      const text = `${spriteOf(pet.species).name} is ready: ${choiceText(choice)}. With no pick, ${spriteOf(choice.evolve).name} tomorrow.`
+      $.ui.toast(text, { timeoutMs: 8000 })
+      await notify($, ctx, 'digi-pet', text)
+    }
+  } else if (!choice && pet.readyDay !== undefined && !to) {
+    // Not both open any more (the day's roll, a care mistake): a later chance gets its own day to pick.
+    pet = { species: pet.species, enteredDay: pet.enteredDay, base: pet.base, log: pet.log }
+    await $.store.set('pet', pet)
+  }
   if (to && isSpecies(to)) {
     const from = pet.species
     const isHatching = SPECIES[from]?.stage === 'egg'
@@ -494,6 +511,25 @@ async function grow($: EngineInterface, ctx: Ctx) {
   const g = growthOf(pet, days, all, growing)
   await update($, growth, () => g)
   if ((await read($, battle)).won !== g.battles.won) await update($, battle, b => ({ ...b, won: g.battles.won }))
+}
+
+/** The pick a pet with two ways on open has. */
+function choiceText(choice: { evolve: string; jogress: string }): string {
+  return `/digi evolve → ${spriteOf(choice.evolve).name}, or /digi jogress → ${spriteOf(choice.jogress).name}`
+}
+
+/** `/digi evolve`: the digivolution, where a jogress is also open and the pet waits for a pick. */
+async function evolveNow($: EngineInterface, ctx: Ctx): Promise<string> {
+  const today = dayOf(await $.clock.now(), await configOf($, ctx))
+  const days = await byDay(storeOf($))
+  const pet = await petOf($)
+  const all = countsOf(days, today, ctx.pace)
+  const choice = choiceOf(pet.species, minus(all, pet.base), SPECIES, { day: today, pace: ctx.pace })
+  if (!choice) return `${spriteOf(pet.species).name} has no choice to make: it digivolves on its own when its stage allows.`
+  const text = `${spriteOf(pet.species).name} digivolved to ${spriteOf(choice.evolve).name}!`
+  await digivolve($, ctx, { species: choice.evolve, enteredDay: today, base: all, log: [...pet.log, { id: choice.evolve, day: today }] }, pet.species, text)
+  await grow($, ctx)
+  return text
 }
 
 async function petOf($: EngineInterface): Promise<Pet> {
@@ -520,11 +556,12 @@ async function digivolve($: EngineInterface, ctx: Ctx, pet: Pet, from: string, t
 
 function growthOf(pet: Pet, days: Ledger, all: Counts, growing: Context): DigiGrowth {
   const stage = minus(all, pet.base)
+  const choice = choiceOf(pet.species, stage, SPECIES, growing)
   return {
     stats: statsOf(days),
     battles: { won: stage.wins, lost: stage.battles - stage.wins },
     ageDays: Object.values(days).filter(d => d.turns >= ACTIVE_TURNS).length,
-    next: progressOf(pet.species, stage, SPECIES, growing),
+    next: pet.readyDay !== undefined && choice ? { label: `ready: ${choiceText(choice)}`, ratio: 1 } : progressOf(pet.species, stage, SPECIES, growing),
     log: pet.log.map(e => ({ name: spriteOf(e.id).name, day: e.day })),
     stage: {
       careMistakes: stage.careMistakes,
@@ -755,6 +792,8 @@ export const register: Register = (on, options) => {
       }
       case 'jogress':
         return { text: await jogress($, ctx) }
+      case 'evolve':
+        return { text: await evolveNow($, ctx) }
       case 'sleep':
         await update($, feeding, f => ({ ...f, isAsleep: true }))
         return { text: 'The pet sleeps until your next prompt: no hunger, no alerts.' }

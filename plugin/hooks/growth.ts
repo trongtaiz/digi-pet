@@ -30,8 +30,11 @@ export type Counts = {
   chaos: number
 }
 
-/** The pet as the store keeps it (`pet`): what it is, since when, and the counts it entered its stage with. */
-export type Pet = { species: string; enteredDay: string; base: Counts; log: { id: string; day: string }[] }
+/**
+ * The pet as the store keeps it (`pet`): what it is, since when, and the counts it entered its stage with.
+ * `readyDay`: the day it found two ways on open (a digivolution and a jogress), and waits for a pick.
+ */
+export type Pet = { species: string; enteredDay: string; base: Counts; log: { id: string; day: string }[]; readyDay?: string }
 
 /** What else growing reads: the day, the pace. */
 export type Context = { day: string; pace: number }
@@ -243,9 +246,17 @@ export function forecastOf(id: string, c: Counts, species: Record<string, Specie
 export function jogressOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context): { to: string; partner: string } | { missing: string } {
   const rule = species[id]?.rules.find(r => r.jogress)
   if (!rule) return { missing: `${species[id]?.name ?? id} has no jogress partner on its chart.` }
-  if (!isGateOpen(species[id]!.stage, c, ctx.pace)) return { missing: `Not yet: ${progressOf(id, c, species, ctx)?.label ?? ''}` }
+  const made = `${species[rule.to]?.name ?? rule.to} (jogress)`
+  if (!isGateOpen(species[id]!.stage, c, ctx.pace)) return { missing: `Not yet: ${progressOf(id, c, species, ctx)!.label.replace(/ → [^→]*$/, '')} → ${made}` }
   if (!isMet({ to: rule.to, ...JOGRESS }, c, ctx, rollOf(id, ctx.day))) return { missing: `Not yet: ${JOGRESS.battles.min} battles this stage and a ${JOGRESS.winRatio.min}% win ratio first.` }
   return { to: rule.to, partner: rule.jogress! }
+}
+
+/** Both ways on open at once, a digivolution and a jogress: a pick for the player; null when there is one way or none. */
+export function choiceOf(id: string, c: Counts, species: Record<string, SpeciesRules>, ctx: Context): { evolve: string; jogress: string } | null {
+  const evolve = evolveTo(id, c, species, ctx)
+  const made = evolve ? jogressOf(id, c, species, ctx) : null
+  return evolve && made && 'to' in made ? { evolve, jogress: made.to } : null
 }
 
 /** The way to the next stage (`day 1/2 · turns 40/100 → Rookie`) and how far along, 0..1; null at the last stage. */
@@ -286,5 +297,6 @@ export function asPet(kept: unknown, start = START_SPECIES): Pet {
     enteredDay: typeof p.enteredDay === 'string' ? p.enteredDay : '',
     base,
     log: Array.isArray(p.log) ? p.log.filter(e => e && typeof e.id === 'string').map(e => ({ id: e.id, day: String(e.day ?? '') })) : [],
+    ...(typeof p.readyDay === 'string' ? { readyDay: p.readyDay } : {}),
   }
 }

@@ -207,7 +207,11 @@ so far.
 ### Jogress and eggs
 
 A Mega with 15 battles this stage and an 80% win ratio can fuse with the
-partner its chart names: `/digi jogress`. Each new pet hatches from one of the
+partner its chart names: `/digi jogress`. A few Ultimates (Kimeramon) can too,
+once their stage has lasted, besides digivolving by their own rule. When both
+ways are open, the pet does not pick for you: it waits out that day for
+`/digi evolve` or `/digi jogress`, and with no pick it digivolves on its own
+the next day. Each new pet hatches from one of the
 five DMC version eggs at random, and each egg leads to a different chart.
 
 ## Commands
@@ -218,6 +222,7 @@ five DMC version eggs at random, and each egg leads to a different chart.
 | `/digi pane` | Open the side pane: the Digivice, stats, branches and evolution log |
 | `/digi log` | Evolution history |
 | `/digi pet` | Pat it (the first three a day raise SYN) |
+| `/digi evolve` | Digivolve now, when a jogress is also open and the pet waits for a pick |
 | `/digi jogress` | Fuse with a partner, where the chart allows |
 | `/digi sleep` | Sleep until your next prompt |
 | `/digi wake` | Wake it: ends a sleep or a break, and keeps it up through the rest window it is in |
