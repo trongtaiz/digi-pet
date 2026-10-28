@@ -498,6 +498,18 @@ test('/digi pane draws the growth: stats, the way to the next stage, its branche
   await ui.unmount()
 })
 
+test('the pane counts care mistakes this stage, as evolution does; /digi stats keeps the lifetime count', async ($, on) => {
+  const base = { turns: 30, activeDays: 1, careMistakes: 2, training: 10, overfeed: 0, sleepDisturbances: 0, battles: 0, wins: 0 }
+  host(on, at('09:00'), { ...yesterday({ turns: 40, careMistakes: 3 }), pet: { species: 'grey', enteredDay: '2026-10-04', base, log: [{ id: 'grey', day: '2026-10-04' }] } })
+  stepWith(on, () => HIT)
+  await start($)
+  const pane = { component: 'Pane', requestId: 'digi', props: { title: 'digi-pet', isFocused: true, bodyColumns: 100, placement: 'inline' } }
+  const ui = await $.ui.mount({ plugin: 'digi-pet', surface: 'terminal', ...pane } as never)
+  expect(JSON.stringify(await ui.drawn({ in: 'pane' }))).toContain('Care mistakes  1 this stage')
+  await ui.unmount()
+  expect((await $.command.run({ ...RUN, command: 'digi', args: 'stats' })).text).toContain('Care mistakes: 3 in all')
+})
+
 /** A turn of tool calls, each answered as `answers` says, the mock clock moved along for each. */
 async function toolTurn($: Engine, clock: { advance: (ms: number) => Promise<void> }, calls: [Record<string, unknown>, string][], reason = 'answer', durationMs = 120_000) {
   const answers = calls.map(([, text]) => text)

@@ -541,7 +541,7 @@ function paneInfo(v: PaneView): [string, Style][] {
     v.quiet
       ? [`Hunger  ${v.quiet}`, { c: DIM }]
       : [`Hunger  ${hearts(v)} ${v.mood === 'asleep' ? 'asleep' : v.hunger === 'cold' ? 'cache cold' : `${Math.ceil(v.minutesLeft)}m left`}`, { c: HUNGER_COLOR[v.hunger] }],
-    [`Care mistakes  ${v.careMistakes}`, { c: v.careMistakes ? '#e5c07b' : DIM }],
+    [`Care mistakes  ${v.careMistakes} this stage`, { c: v.careMistakes ? '#e5c07b' : DIM }],
   ]
   if (v.chaos !== undefined) lines.push([`Chaos  ${v.chaos} this stage`, { c: v.chaos ? '#e5c07b' : DIM }])
   if (v.battles) {

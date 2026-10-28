@@ -906,7 +906,7 @@ export const register: Register = (on, options) => {
     const g = await read($, growth)
     const view: PaneJson = {
       ...(await viewOf($, ctx, t)),
-      careMistakes: await read($, mistakes),
+      careMistakes: g ? g.stage.careMistakes : 0,
       facts: [...(await recordLines($, ctx)), ...(await read($, facts))],
       ...(g ? { stats: g.stats, battles: g.battles, ageDays: g.ageDays, log: g.log, trophies: g.trophies, chaos: g.stage.chaos, forecast: g.forecast } : {}),
       weight: weightOf((await read($, feeding)).contextTokens),

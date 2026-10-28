@@ -84,7 +84,8 @@ anyway: feeding it then would only move the expiry into the break.
 
 A cache that goes cold, and is then picked up again **the same day**, is a care
 mistake: the pet is sick for the next three turns, and the mistake counts
-against it when it digivolves. To keep this fair:
+against it when it digivolves. Like evolution, the pane counts this stage's
+only; `/digi stats` also gives the total. To keep this fair:
 
 - it is at most one care mistake per session per day;
 - coming back the next day is never one (the day starts at `dayStartsHour`, so
