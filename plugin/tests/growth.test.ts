@@ -199,6 +199,11 @@ test('signals: research, lines written, and checks read from their output, piped
   // A check is a command: after `;`, `&&`, `|`, `(` or a newline, past env settings, `npx` or a path.
   expect(run('cd app && source env.sh; NODE_ENV=test npx jest 2>&1 | tail', 'FAIL tests/a.test.js')).toEqual(check(['jest', false, [], ['tests/a.test.js']]))
   expect(run('(./node_modules/.bin/tsc --noEmit; echo $?)', '0')).toEqual(check(['tsc', true]))
+  // A long path where a command starts is read in one pass, not tried every way it splits.
+  const deep = `/${Array.from({ length: 40 }, (_, i) => `d${i}`).join('/')} x`
+  const t = performance.now()
+  expect(run(deep, '')).toEqual({ kind: 'other' })
+  expect(performance.now() - t < 100).toBe(true)
   // A runner named in an argument or a heredoc's body is not run.
   expect(run('grep -rn "jest\\|tsc" src', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
   expect(run("cat > s.py <<'EOF'\nnpm test\nEOF\npython3 s.py", 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })

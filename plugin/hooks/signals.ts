@@ -12,7 +12,7 @@ const RUNNER = String.raw`(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|
  * Named anywhere else (`grep "jest"`), it is not run.
  */
 const CHECK = new RegExp(
-  String.raw`(?:^|[;&|(\n])\s*(?:\w+=\S*\s+|(?:npx|bunx|pnpm\s+(?:exec|dlx)|yarn|time|timeout\s+\S+|uv\s+run|poetry\s+run|python3?\s+-m)\s+|[^\s;&|()]*\/)*(${RUNNER})\b`,
+  String.raw`(?:^|[;&|(\n])\s*(?:\w+=\S*\s+|(?:npx|bunx|pnpm\s+(?:exec|dlx)|yarn|time|timeout\s+\S+|uv\s+run|poetry\s+run|python3?\s+-m)\s+|[^\s;&|()/]*\/)*(${RUNNER})\b`,
   'g',
 )
 /** A heredoc's body (`<<'EOF' … EOF`): text fed to a command, not commands. The rest of its first line is kept. */
