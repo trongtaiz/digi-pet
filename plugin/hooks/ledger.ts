@@ -133,3 +133,29 @@ export function writer(store: Store) {
     },
   }
 }
+
+/** The failures a session lost, by the day: what another session meets of them is a known battle. */
+export type Known = Record<string, string[]>
+export const knownKeyOf = (sessionId: string) => `known:${sessionId}`
+/** How long a failure lost stays known. */
+const KNOWN_DAYS = 7
+
+/** Every session's failures lost in the week to `today`. */
+export async function knownOf(store: Store, today: string): Promise<Set<string>> {
+  const since = new Date(Date.parse(today) - KNOWN_DAYS * 86_400_000).toISOString().slice(0, 10)
+  const names = new Set<string>()
+  for (const key of await store.keys()) {
+    if (!key.startsWith('known:')) continue
+    const kept = await store.get(key)
+    if (!kept || typeof kept !== 'object') continue
+    for (const [day, list] of Object.entries(kept as Known)) if (day > since && Array.isArray(list)) for (const n of list) names.add(String(n))
+  }
+  return names
+}
+
+/** Adds `names` to the session's failures lost on `day`. */
+export async function addKnown(store: Store, sessionId: string, day: string, names: string[]): Promise<void> {
+  const kept = ((await store.get(knownKeyOf(sessionId))) ?? {}) as Known
+  const list = [...new Set([...(kept[day] ?? []), ...names])].sort()
+  await store.set(knownKeyOf(sessionId), { ...kept, [day]: list })
+}

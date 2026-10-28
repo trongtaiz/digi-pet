@@ -4,7 +4,8 @@ import { CHAOS_PER_DAY, GATES, PACES, TRAINING_PER_DAY, ZERO_COUNTS, asPet, eggO
 import type { Counts, Rule } from '../hooks/growth'
 import { ZERO } from '../hooks/ledger'
 import type { Counters } from '../hooks/ledger'
-import { isRisky, signalOf, trophiesOf } from '../hooks/signals'
+import { fight, isRisky, lostAtEnd, signalOf, trophiesOf } from '../hooks/signals'
+import type { Battles } from '../hooks/signals'
 import { SPECIES } from '../hooks/species.gen'
 
 const day = (c: Partial<Counters>): Counters => ({ ...ZERO, ...c })
@@ -93,6 +94,10 @@ test('Chaos turns a branch Virus; the win ratio is this stage\'s battles, and sh
   expect(yes.length > 5 && yes.length < 35).toBe(true)
   expect(rollOf('grey', '2026-11-01')).toBe(rollOf('grey', '2026-11-01'))
   for (const day of yes) expect(rollOf('grey', day) < 0.5).toBe(true)
+  // A new draw each day: not ten days alike while only the last digit of the date changes.
+  const rolls = Array.from({ length: 60 }, (_, i) => rollOf('devi', new Date(Date.UTC(2026, 9, 1 + i)).toISOString().slice(0, 10)))
+  const step = rolls.slice(1).reduce((sum, r, i) => sum + Math.abs(r - rolls[i]!), 0) / (rolls.length - 1)
+  expect(step > 0.2).toBe(true)
 })
 
 test('trophies and summons gate the Ultimate and the Mega; a Mega jogresses with its partner on call', () => {
@@ -136,8 +141,8 @@ test('a stage lasts its gate, then the first rule met wins, and a Rookie no rule
   expect(evolveTo('agu', { ...agu, training: 31 }, SPECIES)).toBe('devi')
   expect(evolveTo('agu', { ...agu, careMistakes: 4, training: 10, overfeed: 3, sleepDisturbances: 4 }, SPECIES)).toBe('tyrano')
   expect(evolveTo('agu', { ...agu, careMistakes: 4, training: 10, overfeed: 3, sleepDisturbances: 9 }, SPECIES)).toBe('nume')
-  // Past a Champion, no catch-all: it keeps fighting until it wins enough.
-  const grey = { ...ZERO_COUNTS, activeDays: 10, trophies: 30, battles: 15, wins: 11 }
+  // Past a Champion, no catch-all: it keeps fighting until it wins enough (under 40%, no roll lets it through).
+  const grey = { ...ZERO_COUNTS, activeDays: 10, trophies: 30, battles: 15, wins: 5 }
   expect(evolveTo('grey', grey, SPECIES)).toBe(null)
   expect(evolveTo('grey', { ...grey, wins: 12 }, SPECIES)).toBe('metalgrey_vi')
   const metal = { ...ZERO_COUNTS, activeDays: 21, trophies: 60, summons: 10, battles: 15, wins: 15 }
@@ -179,15 +184,43 @@ test('signals: research, lines written, and checks read from their output, piped
   expect(signalOf('Edit', { new_string: 'a\nb\nc' }, false, '')).toEqual({ kind: 'write', lines: 3 })
   expect(signalOf('Write', { content: 'x\n'.repeat(500) }, false, '')).toEqual({ kind: 'write', lines: 200 })
   const run = (command: string, text: string, isError = false) => signalOf('Bash', { command }, isError, text)
-  expect(run('npm run test 2>&1 | tail', 'Tests:  2 failed, 8 passed')).toEqual({ kind: 'check', runner: 'npm test', isPass: false })
-  expect(run('npm test 2>&1 | tail', 'Tests:  10 passed, 0 failed')).toEqual({ kind: 'check', runner: 'npm test', isPass: true })
-  expect(run('npx tsc --noEmit | head', "src/a.ts(3,1): error TS2322: Type 'x'")).toEqual({ kind: 'check', runner: 'tsc', isPass: false })
-  expect(run('npx eslint . | tail -3', '✖ 30 problems (0 errors, 30 warnings)')).toEqual({ kind: 'check', runner: 'eslint', isPass: true })
-  expect(run('npx eslint . | tail -3', '✖ 3 problems (2 errors, 1 warning)')).toEqual({ kind: 'check', runner: 'eslint', isPass: false })
-  expect(run('claude plugin test . 2>&1 | tail -4', ' 14 pass\n 1 fail')).toEqual({ kind: 'check', runner: 'claude plugin test', isPass: false })
-  expect(run('cargo test', '', true)).toEqual({ kind: 'check', runner: 'cargo test', isPass: false })
+  const check = (...checks: [string, boolean, string[]?, string[]?][]) => ({
+    kind: 'check',
+    checks: checks.map(([runner, isPass, scope = [], failures = []]) => ({ runner, scope, isPass, failures })),
+  })
+  expect(run('npm run test 2>&1 | tail', 'Tests:  2 failed, 8 passed')).toEqual(check(['npm test', false]))
+  expect(run('npm test 2>&1 | tail', 'Tests:  10 passed, 0 failed')).toEqual(check(['npm test', true]))
+  expect(run('npx tsc --noEmit | head', "src/a.ts(3,1): error TS2322: Type 'x'")).toEqual(check(['tsc', false, [], ['src/a.ts']]))
+  expect(run('npx eslint . | tail -3', '✖ 30 problems (0 errors, 30 warnings)')).toEqual(check(['eslint', true]))
+  expect(run('npx eslint . | tail -3', '✖ 3 problems (2 errors, 1 warning)')).toEqual(check(['eslint', false]))
+  expect(run('claude plugin test plugin 2>&1 | tail -4', ' 14 pass\n 1 fail')).toEqual(check(['claude plugin test', false]))
+  expect(run('cargo test', '', true)).toEqual(check(['cargo test', false]))
   expect(run('git status', '')).toEqual({ kind: 'other' })
-  expect(signalOf('Bash', { command: 'npm test', run_in_background: true }, false, '')).toEqual({ kind: 'other' })
+  // A check is a command: after `;`, `&&`, `|`, `(` or a newline, past env settings, `npx` or a path.
+  expect(run('cd app && source env.sh; NODE_ENV=test npx jest 2>&1 | tail', 'FAIL tests/a.test.js')).toEqual(check(['jest', false, [], ['tests/a.test.js']]))
+  expect(run('(./node_modules/.bin/tsc --noEmit; echo $?)', '0')).toEqual(check(['tsc', true]))
+  // A runner named in an argument or a heredoc's body is not run.
+  expect(run('grep -rn "jest\\|tsc" src', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run("cat > s.py <<'EOF'\nnpm test\nEOF\npython3 s.py", 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run("python3 - <<'EOF' && npm test\nprint('jest')\nEOF", 'Tests: 3 passed')).toEqual(check(['npm test', true]))
+  // Several checks in a call: each is judged by what it printed, a runner of others (`npm run lint`) by what no other claims.
+  expect(run('npx jest 2>&1 | tail -3; npx eslint src', 'Tests: 9 passed\n✖ 2 problems (1 error, 1 warning)')).toEqual(check(['jest', true], ['eslint', false, ['src']]))
+  expect(run('npx eslint src; npx jest 2>&1 | grep FAIL', 'FAIL tests/a.test.js')).toEqual(check(['eslint', true, ['src']], ['jest', false, [], ['tests/a.test.js']]))
+  expect(run('npx jest | grep Tests:; npm run lint', 'Tests: 9 passed\n✖ 636 problems (158 errors, 478 warnings)')).toEqual(check(['jest', true], ['npm lint', false]))
+  // An exit code with no failure printed falls on all of them.
+  expect(run('npx tsc --noEmit && npx jest', '', true)).toEqual(check(['tsc', false], ['jest', false]))
+  // A run against other code than the work (stashed, an old commit or a remote branch, a new worktree) is no battle.
+  expect(run('git stash -q && npx jest; git stash pop -q', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run('git checkout -q d05e8fd8 && npx jest; git checkout -', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run('git checkout -q origin/dev 2>&1; npx jest', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run('git worktree add -q /tmp/b HEAD~3 && cd /tmp/b && npx jest', 'FAIL tests/a.test.js')).toEqual({ kind: 'other' })
+  expect(run('git stash pop && npm test', 'Tests: 3 passed')).toEqual(check(['npm test', true]))
+  expect(run('git checkout -- src/a.js && npm test', 'Tests: 3 passed')).toEqual(check(['npm test', true]))
+  // The part a run runs: the files and tests it names, not settings, redirects or what it leaves out.
+  expect(run('npx jest --testPathIgnorePatterns dk-pos-api 2>&1 | tail', 'Tests: 9 passed')).toEqual(check(['jest', true]))
+  expect(run('npx jest --testPathIgnorePatterns /node_modules/ -- tests/b.test.js a.test.js > /tmp/out.txt', '')).toEqual(check(['jest', true, ['a.test.js', 'tests/b.test.js']]))
+  expect(run('npx jest --testPathIgnorePatterns=dk-pos-api --testPathPattern "$PWD/server/utils/x" 2>&1 | tail -6', 'Tests: 4 passed')).toEqual(check(['jest', true, ['$PWD/server/utils/x']]))
+  expect(run('bunx tsc -p plugin --noEmit; uv run pytest -q -k sum', '')).toEqual(check(['tsc', true], ['pytest', true, ['sum']]))
   // Trophies need proof in the output.
   const won = (command: string, text: string, isError = false) => trophiesOf('Bash', { command }, isError, text)
   expect(won('git commit -m "x"', '[main 1a2b3c4] x\n 1 file changed')).toBe(1)
@@ -209,6 +242,37 @@ test('signals: research, lines written, and checks read from their output, piped
   expect(won('gh pr create --fill', 'a pull request for branch "x" already exists')).toBe(0)
   expect(won('gh pr create --fill 2>&1 | tail -2', 'a pull request for branch "x" into branch "main" already exists:\nhttps://github.com/me/repo/pull/42')).toBe(0)
   expect(signalOf('Agent', { prompt: 'look' }, false, '')).toEqual({ kind: 'summon' })
+})
+
+test('battles: a failure is fought by its name, whatever the run that shows it; still red a turn later, it is the same battle', () => {
+  const b: Battles = { red: new Map(), lost: new Set() }
+  const jest = (isPass: boolean, scope: string[] = [], failures: string[] = []) => fight(b, [{ runner: 'jest', scope, isPass, failures }])
+  // The whole suite red with a test broken before the work began; the file being worked on goes green: no win.
+  expect(jest(false, [], ['tests/old.test.js'])).toEqual({ passed: 0, won: 0 })
+  expect(jest(true, ['a.test.js'])).toEqual({ passed: 1, won: 0 })
+  expect(lostAtEnd(b)).toBe(1)
+  // The same failure turn after turn, through other runs: lost once.
+  jest(false, ['--testPathIgnorePatterns=x'], ['tests/old.test.js'])
+  jest(false, ['tests/old.test.js'], ['tests/old.test.js'])
+  expect(lostAtEnd(b)).toBe(0)
+  // A run that names no failure while the suite is known red: the same battle.
+  jest(false)
+  expect([...b.red.keys()]).toEqual(['jest: tests/old.test.js'])
+  // A new failure is a new battle, lost at the turn's end; fixed in the next turn, won.
+  jest(false, [], ['tests/a.test.js', 'tests/old.test.js'])
+  expect(lostAtEnd(b)).toBe(1)
+  expect(jest(true, ['tests/a.test.js'])).toEqual({ passed: 1, won: 1 })
+  // The old test fixed: the whole suite green wins the last battle.
+  expect(jest(true)).toEqual({ passed: 1, won: 1 })
+  expect(b.red.size + b.lost.size).toBe(0)
+  // A red run with no names, then the same run naming its failures: one battle.
+  jest(false)
+  expect(lostAtEnd(b)).toBe(1)
+  jest(false, [], ['tests/b.test.js', 'tests/c.test.js', 'tests/d.test.js'])
+  expect(lostAtEnd(b)).toBe(0)
+  // A run naming several new failures opens one battle.
+  fight(b, [{ runner: 'tsc', scope: [], isPass: false, failures: ['src/a.ts', 'src/b.ts'] }])
+  expect(lostAtEnd(b)).toBe(1)
 })
 
 test('trophies on any forge: GitLab, Gitea and Forgejo, Azure DevOps and Gerrit, from their CLIs, a push or an MCP tool', () => {

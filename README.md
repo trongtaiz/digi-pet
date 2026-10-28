@@ -102,9 +102,10 @@ type-checks and linters (`npm test`, `pytest`, `tsc`, `cargo test`, `eslint`
 and the like).
 
 - When a check fails, a red **boss** appears with "1 check red" and stays.
-- If the same check passes again **in the same turn**, the boss blows up: a
-  **win**.
-- If the turn ends with it still red, it is a **loss**.
+- When the same check passes again, the boss blows up: a **win**. A run of one
+  file wins only the failures in that file; a run of everything wins them all.
+- If a turn ends with it still red, it is a **loss**, once. Still red at the
+  next turn's end, it is the same battle, not another loss.
 - An interrupted turn is neither.
 
 | A check is red | It goes green in the same turn |
@@ -112,9 +113,21 @@ and the like).
 | ![A red boss with "1 check red" while npm test fails](docs/images/battle-red.png) | ![The boss blows up with WIN! and the score goes to 4](docs/images/battle-win.png) |
 
 Failures are read from the check's output as well as its exit code, since most
-runs are piped through `tail`. Wins this stage show top right. The win ratio
-counts this stage's battles only, starts clean at each digivolution, and
-decides its later evolutions.
+runs are piped through `tail`. When the output names what failed (`FAIL
+tests/a.test.js`, `src/a.ts(3,1): error TS…`), the battle goes by those names,
+so the same broken test seen through another command is the same battle. A
+failure another session already lost this week is a known one, and costs no
+loss again. A test that was broken before you started costs you one loss, not
+one every turn.
+
+Only a check run as a command counts: `grep jest` or a script in a heredoc
+is not one. With several checks in one call (`npx jest; npx eslint src`), each
+is judged by the failures it prints itself. A run against other code than your
+work (after `git stash`, on an old commit or a remote branch checked out, or in
+a worktree made in the same command) is no battle.
+
+Wins this stage show top right. The win ratio counts this stage's battles only,
+starts clean at each digivolution, and decides its later evolutions.
 
 ### Allies
 

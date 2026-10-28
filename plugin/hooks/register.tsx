@@ -29,7 +29,7 @@ import {
   warningOf,
 } from './hunger'
 import type { Config, Quiet } from './hunger'
-import { byDay, totals, writer } from './ledger'
+import { addKnown, byDay, knownOf, totals, writer } from './ledger'
 import type { Counters, Ledger } from './ledger'
 import { BAND_WIDTH, DEVICE_ROWS, MINI_BAND_ROWS, arena, band, isLoud, miniBand, notification, pane, statusLine, toast, toolRow } from './render'
 import type { Attribute, Hunger } from './render'
@@ -37,7 +37,8 @@ import type { RunProps } from './run'
 import { ARENA_MS } from './arena'
 import { FRAME_MS } from './screen'
 import type { ScreenProps } from './screen'
-import { isRisky, signalOf, trophiesOf } from './signals'
+import { fight, isRisky, lostAtEnd, signalOf, trophiesOf } from './signals'
+import type { Battles } from './signals'
 import { SPECIES } from './species.gen'
 import { allyViews, isSpecies, paneView, petView, spriteOf } from './view'
 import type { PaneJson, ViewJson } from './view'
@@ -118,8 +119,8 @@ type Ctx = {
   runs: Map<string, DigiRun>
   /** Whether the running turn has used a tool: a turn of training. */
   isTraining: boolean
-  /** The checks gone red this turn and not green again: battles still being fought. */
-  red: Set<string>
+  /** The checks gone red and not green again, kept from turn to turn: battles still being fought. */
+  battles: Battles
   isOverfull: boolean
   /** `pace`: how long every stage lasts, against normal. */
   pace: number
@@ -151,7 +152,7 @@ function contextOf(options: Readonly<Record<string, unknown>>): Ctx {
     running: new Map(),
     runs: new Map(),
     isTraining: false,
-    red: new Set(),
+    battles: { red: new Map(), lost: new Set() },
     isOverfull: false,
     pace: paceOf(options.pace),
     isStill: options.reducedMotion === true,
@@ -462,12 +463,12 @@ async function trained<R extends object>($: EngineInterface, ctx: Ctx, e: { tool
   const trophies = trophiesOf(e.tool, input, r.isError === true, r.text ?? '')
   if (trophies) await bump($, ctx, { trophies })
   if (e.tool === 'Bash' && isRisky(String(input.command ?? ''))) await bump($, ctx, { chaos: 1 })
-  if (signal.kind === 'check' && !signal.isPass) ctx.red.add(signal.runner)
-  if (signal.kind === 'check' && signal.isPass && ctx.red.delete(signal.runner)) {
-    await bump($, ctx, { checksPassed: 1, battlesWon: 1 })
-    await update($, battle, b => ({ open: ctx.red.size, won: b.won + 1, flash: true }))
-  } else if (signal.kind === 'check' && signal.isPass) await bump($, ctx, { checksPassed: 1 })
-  if (signal.kind === 'check') await update($, battle, b => (b.open === ctx.red.size ? b : { ...b, open: ctx.red.size }))
+  if (signal.kind !== 'check') return result
+  const { passed, won } = fight(ctx.battles, signal.checks)
+  const open = ctx.battles.red.size
+  if (passed) await bump($, ctx, { checksPassed: passed, ...(won ? { battlesWon: won } : {}) })
+  if (won) await update($, battle, b => ({ open, won: b.won + won, flash: true }))
+  await update($, battle, b => (b.open === open ? b : { ...b, open }))
   return result
 }
 
@@ -663,7 +664,6 @@ export const register: Register = (on, options) => {
     ctx.running.clear()
     ctx.runs.clear()
     ctx.isTraining = false
-    ctx.red.clear()
     await update($, battle, b => (b.open || b.flash ? { ...b, open: 0, flash: false } : b))
     await update($, activity, () => ({ act: 'think' }) as DigiActivity)
     return next(e)
@@ -694,9 +694,14 @@ export const register: Register = (on, options) => {
     ctx.runs.clear()
     await update($, activity, () => ({ act: 'idle' }) as DigiActivity)
     const t = await $.clock.now()
-    // A check still red when the turn ends is a battle lost; an interrupted turn fought none to the end, and is a risky move.
+    // A check still red when the turn ends is a battle lost, once: still red at the next, it is the same battle,
+    // and a failure another session lost this week was lost already. An interrupted turn fought none to the end, and is a risky move.
     const isAborted = e.reason === 'aborted'
-    const lost = isAborted ? 0 : ctx.red.size
+    const today = dayOf(t, await configOf($, ctx))
+    const known = isAborted || !ctx.battles.red.size ? new Set<string>() : await knownOf(storeOf($), today)
+    const lost = isAborted ? 0 : lostAtEnd(ctx.battles, known)
+    const names = [...ctx.battles.red].flatMap(([k, r]) => (ctx.battles.lost.has(k) ? r.names : [])).filter(n => !known.has(n))
+    if (names.length) await addKnown(storeOf($), await $.session.id(), today, names)
     await bump($, ctx, {
       turns: 1,
       activeMs: e.durationMs,
@@ -707,7 +712,6 @@ export const register: Register = (on, options) => {
       ...(isAborted ? { chaos: 1 } : {}),
     })
     ctx.isTraining = false
-    ctx.red.clear()
     await update($, battle, b => (b.open ? { ...b, open: 0 } : b))
     const m = await read($, mood)
     if (m.kind === 'sick') await setMood($, ctx, m.turnsLeft > 1 ? { kind: 'sick', turnsLeft: m.turnsLeft - 1 } : { kind: 'normal', turnsLeft: 0 })

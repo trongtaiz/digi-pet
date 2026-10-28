@@ -418,7 +418,7 @@ test('a second session draws the pet the first one digivolved, at start and on i
   expect(toasts.filter(t => t.includes('digivolved'))).toHaveLength(0)
 })
 
-test('battles: a check gone red and green again in a turn is won, one left red is lost, an interrupted turn counts neither', async ($, on) => {
+test('battles: a check gone green again is won, one left red when a turn ends is lost once, an interrupted turn counts neither', async ($, on) => {
   const clock = host(on, at('09:00'))
   stepWith(on, () => HIT)
   await start($)
@@ -436,13 +436,40 @@ test('battles: a check gone red and green again in a turn is won, one left red i
   }
   await fight(['Tests: 2 failed, 8 passed', 'Tests: 10 passed'])
   await fight(['Tests: 1 failed, 9 passed'])
+  // Still red a turn later: the same battle, not another loss.
+  await fight(['Tests: 1 failed, 9 passed'])
   await fight(['Tests: 1 failed, 9 passed'], 'aborted')
+  // Green at last, turns later: won.
   await fight(['Tests: 10 passed'])
   const day = (kept.get('ledger:s1') as Record<string, Record<string, number>>)['2026-10-05']!
-  expect([day.battlesWon, day.battlesLost, day.checksPassed, day.toolTurns, day.activeMs]).toEqual([1, 1, 2, 4, 4 * 60_000])
+  expect([day.battlesWon, day.battlesLost, day.checksPassed, day.toolTurns, day.activeMs]).toEqual([2, 1, 2, 5, 5 * 60_000])
   const stats = (await $.command.run({ ...RUN, command: 'digi', args: 'stats' })).text!
-  expect(stats).toContain('Battles this stage: 1W 1L · win ratio 50% this stage')
+  expect(stats).toContain('Battles this stage: 2W 1L · win ratio 66% this stage')
   expect(stats).toContain('DEF 4')
+})
+
+test('a failure another session already lost this week is a known battle: no loss again', async ($, on) => {
+  const clock = host(on, at('09:00'), { 'known:old': { '2026-10-02': ['tests/unit/broken.test.js'], '2026-09-01': ['tests/unit/fixed.test.js'] } })
+  stepWith(on, () => HIT)
+  await start($)
+  const runs: string[] = []
+  toolAnswer = () => ({ result: 'out', text: runs.shift() ?? 'out' })
+  const fight = async (output: string) => {
+    runs.push(output)
+    await $.turn.start({ text: 'go', turnId: 't' } as never)
+    const call = $.tool.call({ tool: 'Bash', command: 'npx jest 2>&1 | grep FAIL', description: 'test' } as never)
+    await clock.advance(1000)
+    await call
+    await $.turn.complete({ turnId: 't', reason: 'answer', answer: 'done', durationMs: 60_000, isAborted: false } as never)
+  }
+  await fight('FAIL tests/unit/broken.test.js')
+  // Known a month ago only: a loss.
+  await fight('FAIL tests/unit/broken.test.js\nFAIL tests/unit/fixed.test.js')
+  // Lost here: known to the next session.
+  await fight('FAIL tests/unit/broken.test.js\nFAIL tests/unit/fixed.test.js\nFAIL tests/unit/new.test.js')
+  const day = (kept.get('ledger:s1') as Record<string, Record<string, number>>)['2026-10-05']!
+  expect(day.battlesLost).toBe(2)
+  expect(kept.get('known:s1')).toEqual({ '2026-10-05': ['tests/unit/fixed.test.js', 'tests/unit/new.test.js'] })
 })
 
 test('an overfeed is the context crossing 85%, once until it has dropped again', async ($, on) => {

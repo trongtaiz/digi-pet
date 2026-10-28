@@ -148,6 +148,10 @@ export function winRatio(c: Pick<Counts, 'battles' | 'wins'>): number {
 export function rollOf(id: string, day: string): number {
   let h = 2166136261
   for (const ch of `${id}@${day}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619)
+  // FNV-1a barely moves its top bits for the last character, so days ten apart drew alike: mix them (Murmur3's finalizer).
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b)
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35)
+  h ^= h >>> 16
   return (h >>> 0) / 2 ** 32
 }
 
